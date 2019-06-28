@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 public class ManagerHelper {
 
-    public static final String CLASS_NAME = ManagerHelper.class.getName().substring(ManagerHelper.class.getName().lastIndexOf('.') + 1);
+    public static final String CLASS_NAME = ManagerHelper.class.getSimpleName();
 
     public static void mergeJSONObject(JSONObject destination, JSONObject source) {
         if (destination == null || source == null) {

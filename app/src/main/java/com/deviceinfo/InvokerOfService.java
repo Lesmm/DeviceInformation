@@ -15,7 +15,7 @@ import common.modules.util.IReflectUtil;
 
 public class InvokerOfService {
 
-    public static final String CLASS_NAME = InvokerOfService.class.getName().substring(InvokerOfService.class.getName().lastIndexOf('.') + 1);
+    public static final String CLASS_NAME = InvokerOfService.class.getSimpleName();
 
     public static Object getProxy(String serviceInterfaceName, String serviceName) {
         return  asInterface(serviceInterfaceName + "$Stub", getService(serviceName));

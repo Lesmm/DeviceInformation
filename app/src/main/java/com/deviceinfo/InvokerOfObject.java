@@ -7,7 +7,7 @@ import java.util.Map;
 public class InvokerOfObject {
 
     public static interface InvokeHandler {
-        Object handle(Object obj, Class<?> clazz, Method method, String methodName, Class<?>[] parameterTypes, Class<?> returnType) throws Exception;
+        Object handle(Object obj, Class<?> clazz, Method method, String methodName, Class<?>[] parameterTypes, Class<?> returnType, Map<String, Object> resultMap) throws Exception;
     }
 
     public static Map<?, ?> invokeObjectMethods(Object obj, InvokeHandler handler) {
@@ -26,7 +26,7 @@ public class InvokerOfObject {
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 Class<?> returnType = method.getReturnType();
 
-                Object value = handler.handle(obj, clazz, method, methodName, parameterTypes, returnType);
+                Object value = handler.handle(obj, clazz, method, methodName, parameterTypes, returnType, result);
                 if (value != null) {
                     result.put(methodName, value);
                 }

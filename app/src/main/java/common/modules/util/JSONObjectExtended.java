@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,7 +76,8 @@ public class JSONObjectExtended extends JSONObject {
             }
             return objectToJson(o);
         } catch (Exception ignored) {
-
+            Log.d("--JSONObjectExtended--", ignored.toString());
+            ignored.printStackTrace();
         }
         return null;
     }
@@ -128,11 +130,20 @@ public class JSONObjectExtended extends JSONObject {
                     field.setAccessible(true);
                     String fieldName = field.getName();
 
+                    boolean isStatic = Modifier.isStatic(field.getModifiers());
+                    boolean isFinal = Modifier.isFinal(field.getModifiers());
+                    Class<?> type = field.getType();
+
+                    if ( isStatic && isFinal && ( type == int.class || type == String.class || type == char[].class  ) ) {
+                        // TODO ... if fieldName characters are all uppercase ???
+                        continue;
+                    }
+
                     if (fieldName.equals("CREATOR")) {
                         continue;
                     }
 
-                    Object fieldValue = field.get(Modifier.isStatic(field.getModifiers()) ? clazz : obj);
+                    Object fieldValue = field.get(isStatic ? clazz : obj);
                     if (fieldValue != null) {
                         result.put(fieldName, fieldValue);
                     }
