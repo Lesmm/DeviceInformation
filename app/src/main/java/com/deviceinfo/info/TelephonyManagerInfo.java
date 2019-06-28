@@ -1,8 +1,13 @@
-package com.deviceinfo;
+package com.deviceinfo.info;
 
 import android.content.Context;
 import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
+
+import com.deviceinfo.InvokerOfObject;
+import com.deviceinfo.InvokerOfService;
+import com.deviceinfo.JSONObjectExtended;
+import com.deviceinfo.ManagerInfoHelper;
 
 import org.json.JSONObject;
 
@@ -11,7 +16,6 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import common.modules.util.IReflectUtil;
-import common.modules.util.JSONObjectExtended;
 
 public class TelephonyManagerInfo {
 
@@ -23,9 +27,9 @@ public class TelephonyManagerInfo {
 
         JSONObject telephonyResult = new JSONObject();
 
-        ManagerHelper.mergeJSONObject(telephonyResult, telephonyInfo);
-        ManagerHelper.mergeJSONObject(telephonyResult, phoneSubInfo);
-        ManagerHelper.mergeJSONObject(telephonyResult, telecomInfo);
+        ManagerInfoHelper.mergeJSONObject(telephonyResult, telephonyInfo);
+        ManagerInfoHelper.mergeJSONObject(telephonyResult, phoneSubInfo);
+        ManagerInfoHelper.mergeJSONObject(telephonyResult, telecomInfo);
 
         return telephonyResult;
     }
@@ -209,7 +213,7 @@ public class TelephonyManagerInfo {
                 // public java.lang.String getMsisdn(java.lang.String callingPackage) throws android.os.RemoteException;	// important !!!
                 // public java.lang.String getVoiceMailNumber(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getVoiceMailAlphaTag(java.lang.String callingPackage) throws android.os.RemoteException;
-                if ( parameterTypes.length == 1 && parameterTypes[0] == java.lang.String.class
+                if ( parameterTypes.length == 1 && parameterTypes[0] == String.class
                         && ( methodName.equals("getDeviceId") || methodName.equals("getDeviceSvn")
                         || methodName.equals("getSubscriberId") || methodName.equals("getGroupIdLevel1")
                         || methodName.equals("getIccSerialNumber") || methodName.equals("getLine1Number")
@@ -217,6 +221,72 @@ public class TelephonyManagerInfo {
                         || methodName.equals("getVoiceMailNumber") || methodName.equals("getVoiceMailAlphaTag") ) ) {
                     Object value = method.invoke(obj, new Object[]{opPackageName});
                     return value;
+                }
+
+
+                final Object fObj = obj;
+                final Method fMethod = method;
+                final String fMethodName = methodName;
+                final Map<String, Object> fResultMap = resultMap;
+
+                // public java.lang.String getCompleteVoiceMailNumberForSubscriber(int subId) throws android.os.RemoteException;
+                if ( parameterTypes.length == 1 && parameterTypes[0] == int.class ) {
+                    if ( methodName.equals("getCompleteVoiceMailNumberForSubscriber") ) {
+
+                        SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                            @Override
+                            public void handle(SubscriptionInfo info) throws Exception {
+                                int mId = (Integer) IReflectUtil.getFieldValue(info, "mId");
+                                String key = fMethodName + "_arg0_int_" + mId;
+                                Object value = fMethod.invoke(fObj, new Object[]{mId});
+                                if (value != null) {
+                                    fResultMap.put(key, value);
+                                }
+                            }
+                        });
+
+                    }
+
+                }
+
+                // TODO ... phoneId , what is phoneId & how to get phoneId
+                // public java.lang.String getDeviceIdForPhone(int phoneId, java.lang.String callingPackage) throws android.os.RemoteException;
+
+                // public java.lang.String getNaiForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getImeiForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getDeviceSvnUsingSubId(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getSubscriberIdForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getGroupIdLevel1ForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getIccSerialNumberForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getLine1NumberForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getLine1AlphaTagForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getMsisdnForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getVoiceMailNumberForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                // public java.lang.String getVoiceMailAlphaTagForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
+                if ( parameterTypes.length == 2 && parameterTypes[0] == int.class && parameterTypes[1] == String.class ) {
+
+                    if ( methodName.equals("getNaiForSubscriber") || methodName.equals("getImeiForSubscriber")
+                            || methodName.equals("getDeviceSvnUsingSubId") || methodName.equals("getSubscriberIdForSubscriber")
+                            || methodName.equals("getGroupIdLevel1ForSubscriber") || methodName.equals("getIccSerialNumberForSubscriber")
+                            || methodName.equals("getLine1NumberForSubscriber") || methodName.equals("getLine1AlphaTagForSubscriber")
+                            || methodName.equals("getMsisdnForSubscriber") || methodName.equals("getVoiceMailNumberForSubscriber")
+                            || methodName.equals("getVoiceMailAlphaTagForSubscriber")
+                    ) {
+
+                        SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                            @Override
+                            public void handle(SubscriptionInfo info) throws Exception {
+                                int mId = (Integer) IReflectUtil.getFieldValue(info, "mId");
+                                String key = fMethodName + "_arg0_int_" + mId;
+                                Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
+                                if (value != null) {
+                                    fResultMap.put(key, value);
+                                }
+                            }
+                        });
+
+                    }
+
                 }
 
                 return null;

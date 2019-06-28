@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.deviceinfo.SubscriptionManagerInfo;
-import com.deviceinfo.TelephonyManagerInfo;
+import com.deviceinfo.info.SubscriptionManagerInfo;
+import com.deviceinfo.info.TelephonyManagerInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
     public void getInfo() {
         try {
 
+            this.getResources();
+
             JSONObject result = new JSONObject();
 
             JSONObject telephonyInfo = TelephonyManagerInfo.getInfo(this);
@@ -73,8 +75,8 @@ public class MainActivity extends AppCompatActivity {
 
             result.put("Telephony", telephonyInfo);
             result.put("Subscription", subscriptionInfo);
-            Log.d("", "");
 
+            Log.d("", "");
         } catch (JSONException e) {
             e.printStackTrace();
         }

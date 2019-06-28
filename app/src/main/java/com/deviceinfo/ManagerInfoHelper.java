@@ -6,9 +6,9 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-public class ManagerHelper {
+public class ManagerInfoHelper {
 
-    public static final String CLASS_NAME = ManagerHelper.class.getSimpleName();
+    public static final String CLASS_NAME = ManagerInfoHelper.class.getSimpleName();
 
     public static void mergeJSONObject(JSONObject destination, JSONObject source) {
         if (destination == null || source == null) {

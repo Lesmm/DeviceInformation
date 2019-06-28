@@ -1,4 +1,4 @@
-package common.modules.util;
+package com.deviceinfo;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,6 +16,8 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import common.modules.util.IReflectUtil;
 
 public class JSONObjectExtended extends JSONObject {
 
@@ -53,9 +55,9 @@ public class JSONObjectExtended extends JSONObject {
         }
         try {
             if (o instanceof Collection) {
-                return new JSONArrayEx((Collection) o);
+                return new JSONArrayExtended((Collection) o);
             } else if (o.getClass().isArray()) {
-                return new JSONArrayEx(o);
+                return new JSONArrayExtended(o);
             }
             if (o instanceof Map) {
                 return new JSONObjectExtended((Map) o);

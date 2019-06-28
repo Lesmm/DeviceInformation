@@ -1,10 +1,14 @@
-package com.deviceinfo;
+package com.deviceinfo.info;
 
 import android.content.Context;
 import android.os.IBinder;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.util.Log;
+
+import com.deviceinfo.InvokerOfObject;
+import com.deviceinfo.InvokerOfService;
+import com.deviceinfo.JSONObjectExtended;
 
 import org.json.JSONObject;
 
@@ -14,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import common.modules.util.IReflectUtil;
-import common.modules.util.JSONObjectExtended;
 
 public class SubscriptionManagerInfo {
 

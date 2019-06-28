@@ -1,4 +1,6 @@
-package common.modules.util;
+package com.deviceinfo;
+
+import com.deviceinfo.JSONObjectExtended;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class JSONArrayEx extends JSONArray {
+public class JSONArrayExtended extends JSONArray {
 
-    public JSONArrayEx(Collection copyFrom) {
+    public JSONArrayExtended(Collection copyFrom) {
         super();
         if (copyFrom != null) {
             for (Iterator it = copyFrom.iterator(); it.hasNext();) {
@@ -20,7 +22,7 @@ public class JSONArrayEx extends JSONArray {
         }
     }
 
-    public JSONArrayEx(Object array) throws JSONException {
+    public JSONArrayExtended(Object array) throws JSONException {
         if (!array.getClass().isArray()) {
             throw new JSONException("Not a primitive array: " + array.getClass());
         }
