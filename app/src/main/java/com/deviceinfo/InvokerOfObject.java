@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ObjectInvoker {
+public class InvokerOfObject {
 
     public static interface InvokeHandler {
         Object handle(Object obj, Class<?> clazz, Method method, String methodName, Class<?>[] parameterTypes, Class<?> returnType) throws Exception;
