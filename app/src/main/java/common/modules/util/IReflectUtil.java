@@ -10,11 +10,11 @@ import java.util.Map;
 
 public class IReflectUtil {
 
-    public interface IterateFieldHandler {
+    public static interface IterateFieldHandler {
         public boolean action(Class<?> clazz, Field field, String fieldName);
     }
 
-    public void iterateFields(Class<?> clazz, IterateFieldHandler handler) {
+    public static void iterateFields(Class<?> clazz, IterateFieldHandler handler) {
         Field[] fields = clazz.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];

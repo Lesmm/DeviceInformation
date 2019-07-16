@@ -245,4 +245,24 @@ public class IJSONObjectUtil {
 		}
 	}
 
+	/*
+	 * Iterate Json
+	 */
+	public interface IterateHandler {
+		void iterateAction(String key, Object value);
+	}
+
+	public static void iterateJSONObject(JSONObject jsonObject, IterateHandler handler) {
+		try {
+			java.util.Iterator iterator = jsonObject.keys();
+			while (iterator.hasNext()) {
+				String key = (String) iterator.next();
+				Object value = jsonObject.opt(key);
+				handler.iterateAction(key, value);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

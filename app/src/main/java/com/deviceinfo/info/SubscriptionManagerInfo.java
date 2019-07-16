@@ -72,12 +72,12 @@ public class SubscriptionManagerInfo {
                 }
 
                 if (parameterTypes.length == 0) {
-
                     // public int clearSubInfo() throws android.os.RemoteException;
                     // public void clearDefaultsForInactiveSubIds() throws android.os.RemoteException;
                     if (methodName.startsWith("clear")) {
                         return null;
                     }
+
                     Object value = method.invoke(Modifier.isStatic(method.getModifiers()) ? clazz : obj, new Object[]{});
                     return value;
                 }
@@ -143,7 +143,7 @@ public class SubscriptionManagerInfo {
                     IterateActiveSubscriptionInfoList(mContext, new IterateHandler() {
                         @Override
                         public void handle(SubscriptionInfo info) throws Exception {
-                            // TODO ... 测试插了 171 的卡取出的 value 为 null
+                            // TODO ... 测试插了 171 的卡取出后的 value 为 null
                             String mIccId = (String) IReflectUtil.getFieldValue(info, "mIccId");
                             String key = fMethodName + "_arg0_String_" + mIccId;
                             Object value = fMethod.invoke(fObj, new Object[]{mIccId, opPackageName});
