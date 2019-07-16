@@ -52,10 +52,21 @@ public class TelephonyManagerInfo {
                 if (methodName.startsWith("set")) {
                     return null;
                 }
+                // all enable or disable
+                if (methodName.startsWith("enable") || methodName.startsWith("disable")) {
+                    return null;
+                }
 
                 // public boolean endCall() throws android.os.RemoteException;
                 // public boolean endCallForSubscriber(int subId) throws android.os.RemoteException;
-                if (methodName.startsWith("endCall")) { // will block when without sim card
+                // will block when without sim card
+                if (methodName.startsWith("endCall")) {
+                    return null;
+                }
+                // public byte[] getAtr() throws android.os.RemoteException;
+                // public byte[] getAtrUsingSubId(int subId) throws android.os.RemoteException;
+                // will crash when without sim card: com.android.phone E/PhoneInterfaceManager: [PhoneIntfMgr] getIccId: ICC ID is null or empty.
+                if (methodName.startsWith("getAtr")) {
                     return null;
                 }
 

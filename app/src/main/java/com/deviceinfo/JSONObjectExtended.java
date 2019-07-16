@@ -138,6 +138,7 @@ public class JSONObjectExtended extends JSONObject {
 
                     if ( isStatic && isFinal && ( type == int.class || type == String.class || type == char[].class  ) ) {
                         // TODO ... if fieldName characters are all uppercase ???
+                        // TODO ... but Build.class also has static final ...
                         continue;
                     }
 
