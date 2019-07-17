@@ -113,11 +113,8 @@ public class JSONObjectExtended extends JSONObject {
         Boolean isClass = obj instanceof Class;
         Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();
 
-        if (
-                clazz == Bitmap.class || clazz == Color.class ||
-                        clazz == BitmapDrawable.class ||  clazz == ColorDrawable.class ||
-                        clazz == Drawable.class  || clazz == Icon.class
-        ) {
+        if ( clazz == Bitmap.class || clazz == Color.class || clazz == BitmapDrawable.class ||
+                clazz == ColorDrawable.class || clazz == Drawable.class  || clazz == Icon.class ) {
             return null;
         }
 
@@ -134,15 +131,15 @@ public class JSONObjectExtended extends JSONObject {
 
                     boolean isStatic = Modifier.isStatic(field.getModifiers());
                     boolean isFinal = Modifier.isFinal(field.getModifiers());
-                    Class<?> type = field.getType();
 
-                    if ( isStatic && isFinal && ( type == int.class || type == String.class || type == char[].class  ) ) {
+                    // Class<?> type = field.getType();
+                    if ( isStatic && isFinal /*&& ( type == int.class || type == String.class || type == char[].class  )*/ ) {
                         // TODO ... if fieldName characters are all uppercase ???
-                        // TODO ... but Build.class also has static final ...
+                        // TODO ... but Build.class also has static final ..., So Build.class not permitted use JSONObjectExtended
                         continue;
                     }
 
-                    if (fieldName.equals("CREATOR")) {
+                    if (fieldName.equals("shadow$_monitor_") || fieldName.equals("shadow$_klass_") || fieldName.equals("CREATOR")) {
                         continue;
                     }
 

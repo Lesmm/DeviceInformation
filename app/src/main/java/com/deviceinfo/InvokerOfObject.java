@@ -1,5 +1,7 @@
 package com.deviceinfo;
 
+import android.util.Log;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +35,7 @@ public class InvokerOfObject {
 
             } catch (Exception e) {
                 e.printStackTrace();
+                Log.d("DeviceInfo","调service方法失败: " + methodName + " -> " + e.toString());
             }
         }
         return result;

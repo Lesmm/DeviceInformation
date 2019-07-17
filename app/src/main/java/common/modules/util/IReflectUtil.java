@@ -131,9 +131,6 @@ public class IReflectUtil {
                     String name = field.getName();
                     Object value = field.get(Modifier.isStatic(field.getModifiers()) ? clazz : obj);
 
-                    if (value == null) {
-                        value = "<NULL>";
-                    }
                     result.put(name, value);
                 } catch (Exception e) {
                     e.printStackTrace();

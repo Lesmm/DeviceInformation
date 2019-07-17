@@ -1,11 +1,13 @@
 package com.deviceinfo.info;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
+import android.content.pm.ResolveInfo;
 import android.util.Log;
 
 import com.deviceinfo.InvokerOfObject;
@@ -18,6 +20,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +89,13 @@ public class PackageManagerInfo {
                     // public android.content.pm.IPackageInstaller getPackageInstaller() throws android.os.RemoteException;
                     // public int getInstallLocation() throws android.os.RemoteException;
                     // public boolean hasSystemUidErrors() throws android.os.RemoteException;
+                    if (methodName.equals("getPackageInstaller") || methodName.equals("getInstallLocation") || methodName.equals("hasSystemUidErrors")) {
+                        return null;
+                    }
+
                     // public boolean isSafeMode() throws android.os.RemoteException;
-                    if (methodName.equals("getPackageInstaller") || methodName.equals("getInstallLocation") || method.equals("hasSystemUidErrors")
-                            || method.equals("isSafeMode")) {
+                    if (methodName.equals("isSafeMode") || methodName.equals("isStorageLow") || methodName.equals("isOnlyCoreApps")
+                            || methodName.equals("isFirstBoot") || methodName.equals("isUpgrade")) {
                         return null;
                     }
 
@@ -127,12 +134,54 @@ public class PackageManagerInfo {
                             // public int getPrivateFlagsForUid(int uid) throws android.os.RemoteException;
                             // public boolean isUidPrivileged(int uid) throws android.os.RemoteException;
                         }
+
+                        // public java.util.List<android.content.pm.ApplicationInfo> getPersistentApplications(int flags) throws android.os.RemoteException;
+                        if (methodName.equals("getPersistentApplications")) {
+                            int flags = 0;
+                            Object value = method.invoke(obj, new Object[]{flags});
+                            JSONArray array = translateApplicationInfos2JSONArray((java.util.List<android.content.pm.ApplicationInfo>) value);
+                            return array;
+                        }
+
+                        // public java.util.List<android.content.pm.PackageInfo> getPreferredPackages(int flags) throws android.os.RemoteException;
+                        if (methodName.equals("getPreferredPackages")) {
+                            int flags = 0;
+                            Object value = method.invoke(obj, new Object[]{flags});
+                            JSONArray array = translatePackageInfos2JSONArray((java.util.List<android.content.pm.PackageInfo>) value);
+                            return array;
+                        }
+
+                        // public java.lang.String getDefaultBrowserPackageName(int userId) throws android.os.RemoteException;
+                        if (methodName.equals("getDefaultBrowserPackageName")) {
+                            Object value = method.invoke(obj, new Object[]{userId});
+                            return value;
+                        }
                     }
 
                     // ### public android.content.pm.FeatureInfo[] getSystemAvailableFeatures() throws android.os.RemoteException;
-                    // public boolean hasSystemFeature(java.lang.String name) throws android.os.RemoteException;    // TODO ... Hook 那边根据 getSystemAvailableFeatures() 的来返回值
+                    // TODO ... Hook 那边根据 getSystemAvailableFeatures() 的来返回值
+                    // public boolean hasSystemFeature(java.lang.String name) throws android.os.RemoteException;
                     if (parameterTypes[0] == String.class) {
 
+                    }
+
+
+                    // TODO ... Hook 那边来特别处理一下 返回值 及 outHomeCandidates
+                    // public android.content.ComponentName getHomeActivities(java.util.List<android.content.pm.ResolveInfo> outHomeCandidates) throws android.os.RemoteException;
+                    if (parameterTypes[0] == java.util.List.class) {
+                        if (methodName.equals("getHomeActivities")) {
+                            List<ResolveInfo> resolveInfos = new ArrayList<>();
+                            Object value = method.invoke(obj, new Object[]{resolveInfos});
+
+                            if (value != null) {
+                                resultMap.put("returnValue", value);
+                            }
+                            if (resolveInfos.size() != 0) {
+                                JSONArray array = translateResolveInfo2JSONArray(resolveInfos);
+                                resultMap.put("outHomeCandidates", array);
+                            }
+                            return null;
+                        }
                     }
                 }
 
@@ -155,6 +204,12 @@ public class PackageManagerInfo {
                                 @Override
                                 public void handle(PackageInfo info) throws Exception {
                                     String packageName = info.packageName;
+
+                                    // remove the android official system common app
+                                    if (isAndroidOfficePackage(packageName)) {
+                                        return;
+                                    }
+
                                     Object value = fMethod.invoke(fObj, new Object[]{packageName, userId}); // value is Boolean
                                     if (value != null) {
                                         availableMap.put(packageName, value);
@@ -186,7 +241,6 @@ public class PackageManagerInfo {
                         }
 
                     }
-
 
                 }
 
@@ -226,7 +280,6 @@ public class PackageManagerInfo {
                                 }
                             });
                         }
-
 
                     }
                 }
@@ -311,31 +364,11 @@ public class PackageManagerInfo {
         return array;
     }
 
-    public static JSONArray translateApplicationInfos2JSONArray(List<ApplicationInfo> applicationInfos) {
-        JSONArray array = new JSONArray();
-        for (int i = 0; i < applicationInfos.size(); i++) {
-            ApplicationInfo applicationInfo = applicationInfos.get(i);
-            JSONObject applicationInfoJson = translateApplicationInfo2JSONObject(applicationInfo);
-            if (applicationInfoJson != null) {
-                array.put(applicationInfoJson);
-            }
-        }
-        return array;
-    }
-
-    public static JSONObject translateApplicationInfo2JSONObject(ApplicationInfo applicationInfo) {
-        Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(applicationInfo, IArrayUtil.arrayToList(new String[]{"sourceDir", "publicSourceDir", "dataDir", "className", "processName", "targetSdkVersion"}));
-        return new JSONObjectExtended(map);
-    }
-
     public static JSONObject translatePackageInfo2JSONObject(PackageInfo packageInfo) {
         String packageName = packageInfo.packageName;
 
         // remove the android official system common app
-        // 官方的包: com.android, 高通的包: com.qualcomm & org.codeaurora(org.codeaurora.bluetooth), CM的包: com.cyanogenmod & org.cyanogenmod
-        if (packageName.startsWith("com.android") || packageName.startsWith("com.qualcomm")
-                || packageName.startsWith("com.cyanogenmod") || packageName.startsWith("org.cyanogenmod")
-        ) {
+        if (isAndroidOfficePackage(packageName)) {
             return null;
         }
 
@@ -356,5 +389,81 @@ public class PackageManagerInfo {
         }
 
         return null;
+    }
+
+    public static JSONArray translateResolveInfo2JSONArray(List<ResolveInfo> resolveInfos) {
+        JSONArray array = new JSONArray();
+        for (int i = 0; i < resolveInfos.size(); i++) {
+            ResolveInfo resolveInfo = resolveInfos.get(i);
+            JSONObject resolveInfoJson = translateResolveInfo2JSONObject(resolveInfo);
+            if (resolveInfoJson != null) {
+                array.put(resolveInfoJson);
+            }
+        }
+        return array;
+    }
+
+    public static JSONObject translateResolveInfo2JSONObject(ResolveInfo resolveInfo) {
+        String packageName = resolveInfo.activityInfo.packageName;
+
+        // remove the android official system common app
+        if (isAndroidOfficePackage(packageName)) {
+            return null;
+        }
+
+        Map<?, ?> resultMap = IReflectUtilWrapper.getFieldsValues(resolveInfo, IArrayUtil.arrayToList(new String[]{"resolvePackageName"}));
+        JSONObject resolveInfoJson = new JSONObjectExtended(resultMap);
+
+        ActivityInfo activityInfo = resolveInfo.activityInfo;
+        Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(activityInfo, IArrayUtil.arrayToList(new String[]{"name", "packageName", "processName"}));
+        JSONObject activityInfoJson = new JSONObjectExtended(map);
+
+        ApplicationInfo applicationInfo = activityInfo.applicationInfo;
+        JSONObject applicationInfoJson = translateApplicationInfo2JSONObject(applicationInfo);
+
+        try {
+            resolveInfoJson.put("activityInfo", activityInfoJson);
+            activityInfoJson.put("applicationInfo", applicationInfoJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return resolveInfoJson;
+    }
+
+    public static JSONArray translateApplicationInfos2JSONArray(List<ApplicationInfo> applicationInfos) {
+        JSONArray array = new JSONArray();
+        for (int i = 0; i < applicationInfos.size(); i++) {
+            ApplicationInfo applicationInfo = applicationInfos.get(i);
+            JSONObject applicationInfoJson = translateApplicationInfo2JSONObject(applicationInfo);
+            if (applicationInfoJson != null) {
+                array.put(applicationInfoJson);
+            }
+        }
+        return array;
+    }
+
+    public static JSONObject translateApplicationInfo2JSONObject(ApplicationInfo applicationInfo) {
+        String packageName = applicationInfo.packageName;
+
+        // remove the android official system common app
+        if (isAndroidOfficePackage(packageName)) {
+            return null;
+        }
+
+        Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(applicationInfo, IArrayUtil.arrayToList(new String[]{"name", "packageName", "className", "processName", "targetSdkVersion",
+                "sourceDir", "publicSourceDir", "dataDir"}));
+        return new JSONObjectExtended(map);
+    }
+
+    public static boolean isAndroidOfficePackage(String packageName) {
+        // 官方的包: com.android, 高通的包: com.qualcomm & org.codeaurora(org.codeaurora.bluetooth), CM的包: com.cyanogenmod & org.cyanogenmod
+        if (packageName == null) {
+            return false;
+        }
+        if (packageName.startsWith("com.android") || packageName.startsWith("com.qualcomm") || packageName.startsWith("com.cyanogenmod") || packageName.startsWith("org.cyanogenmod")) {
+            return true;
+        }
+        return false;
     }
 }

@@ -1,16 +1,21 @@
 package com.deviceinfo.info;
 
 import android.content.Context;
+import android.content.pm.ResolveInfo;
+import android.os.UserHandle;
 import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
 import com.deviceinfo.ManagerInfoHelper;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -36,8 +41,8 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getITelephonyInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[] {});
-        Object iTelephony = IReflectUtil.invokeMethod(telephonyManager, "getITelephony", new Class[]{}, new Object[] {});
+        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[]{});
+        Object iTelephony = IReflectUtil.invokeMethod(telephonyManager, "getITelephony", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(iTelephony, new InvokerOfObject.InvokeHandler() {
             @Override
@@ -89,14 +94,14 @@ public class TelephonyManagerInfo {
                 // public java.lang.String[] getMergedSubscriberIds(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public boolean isVideoCallingEnabled(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getDeviceId(java.lang.String callingPackage) throws android.os.RemoteException;	// important!!!
-                if ( parameterTypes.length == 1 && parameterTypes[0] == String.class
-                        && ( methodName.equals("getDeviceId") || methodName.equals("getDataNetworkType")
+                if (parameterTypes.length == 1 && parameterTypes[0] == String.class
+                        && (methodName.equals("getDeviceId") || methodName.equals("getDataNetworkType")
                         || methodName.equals("isOffhook") || methodName.equals("isRinging")
                         || methodName.equals("isIdle") || methodName.equals("isRadioOn")
                         || methodName.equals("isSimPinEnabled") || methodName.equals("getCdmaEriIconIndex")
                         || methodName.equals("getCdmaEriIconMode") || methodName.equals("getCdmaEriText")
                         || methodName.equals("getLteOnCdmaMode") || methodName.equals("getCalculatedPreferredNetworkType")
-                        || methodName.equals("getMergedSubscriberIds") || methodName.equals("isVideoCallingEnabled") ) ) {
+                        || methodName.equals("getMergedSubscriberIds") || methodName.equals("isVideoCallingEnabled"))) {
                     Object value = method.invoke(obj, new Object[]{opPackageName});
                     return value;
                 }
@@ -107,7 +112,7 @@ public class TelephonyManagerInfo {
                 final String fMethodName = methodName;
                 final Map<String, Object> fResultMap = resultMap;
 
-                if ( parameterTypes.length == 1 && parameterTypes[0] == int.class ) {
+                if (parameterTypes.length == 1 && parameterTypes[0] == int.class) {
 
                     // public int getCallStateForSubscriber(int subId) throws android.os.RemoteException;
                     // public int getActivePhoneTypeForSubscriber(int subId) throws android.os.RemoteException;
@@ -119,7 +124,7 @@ public class TelephonyManagerInfo {
                     // public java.lang.String getCdmaMdn(int subId) throws android.os.RemoteException;
                     // public java.lang.String getCdmaMin(int subId) throws android.os.RemoteException;
                     // public byte[] getAtrUsingSubId(int subId) throws android.os.RemoteException;         // TODO ... Check How to handle byte[] in Json end
-                    if ( methodName.equals("getCallStateForSubscriber") || methodName.equals("getActivePhoneTypeForSubscriber")
+                    if (methodName.equals("getCallStateForSubscriber") || methodName.equals("getActivePhoneTypeForSubscriber")
                             || methodName.equals("getVoiceMessageCountForSubscriber") || methodName.equals("getIccOperatorNumericForData")
                             || methodName.equals("getPreferredNetworkType") || methodName.equals("getCellNetworkScanResults")
                             || methodName.equals("getDataEnabled") || methodName.equals("getCdmaMdn")
@@ -128,7 +133,7 @@ public class TelephonyManagerInfo {
                         SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
-                                int mId = (Integer) IReflectUtil.getFieldValue(info, "mId");
+                                int mId = info.getSubscriptionId();
                                 String key = fMethodName + "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId});
                                 if (value != null) {
@@ -140,7 +145,7 @@ public class TelephonyManagerInfo {
 
                 }
 
-                if ( parameterTypes.length == 2 && parameterTypes[0] == int.class && parameterTypes[1] == String.class ) {
+                if (parameterTypes.length == 2 && parameterTypes[0] == int.class && parameterTypes[1] == String.class) {
 
                     // TODO ... phoneId , what is phoneId & how to get phoneId
                     // public int getRadioAccessFamily(int phoneId, java.lang.String callingPackage) throws android.os.RemoteException;
@@ -158,7 +163,7 @@ public class TelephonyManagerInfo {
                     // public int getLteOnCdmaModeForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                     // public java.lang.String getLine1NumberForDisplay(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                     // public java.lang.String getLine1AlphaTagForDisplay(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
-                    if ( methodName.equals("isOffhookForSubscriber") || methodName.equals("isRingingForSubscriber")
+                    if (methodName.equals("isOffhookForSubscriber") || methodName.equals("isRingingForSubscriber")
                             || methodName.equals("isIdleForSubscriber") || methodName.equals("isRadioOnForSubscriber")
                             || methodName.equals("getCdmaEriIconIndexForSubscriber") || methodName.equals("getCdmaEriIconModeForSubscriber")
                             || methodName.equals("getCdmaEriTextForSubscriber") || methodName.equals("getNetworkTypeForSubscriber")
@@ -170,7 +175,7 @@ public class TelephonyManagerInfo {
                         SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
-                                int mId = (Integer) IReflectUtil.getFieldValue(info, "mId");
+                                int mId = info.getSubscriptionId();
                                 String key = fMethodName + "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
                                 if (value != null) {
@@ -192,8 +197,8 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getIPhoneSubInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[] {});
-        Object iPhoneSubInfo = IReflectUtil.invokeMethod(telephonyManager, "getSubscriberInfo", new Class[]{}, new Object[] {});
+        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[]{});
+        Object iPhoneSubInfo = IReflectUtil.invokeMethod(telephonyManager, "getSubscriberInfo", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(iPhoneSubInfo, new InvokerOfObject.InvokeHandler() {
             @Override
@@ -224,12 +229,12 @@ public class TelephonyManagerInfo {
                 // public java.lang.String getMsisdn(java.lang.String callingPackage) throws android.os.RemoteException;	// important !!!
                 // public java.lang.String getVoiceMailNumber(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getVoiceMailAlphaTag(java.lang.String callingPackage) throws android.os.RemoteException;
-                if ( parameterTypes.length == 1 && parameterTypes[0] == String.class
-                        && ( methodName.equals("getDeviceId") || methodName.equals("getDeviceSvn")
+                if (parameterTypes.length == 1 && parameterTypes[0] == String.class
+                        && (methodName.equals("getDeviceId") || methodName.equals("getDeviceSvn")
                         || methodName.equals("getSubscriberId") || methodName.equals("getGroupIdLevel1")
                         || methodName.equals("getIccSerialNumber") || methodName.equals("getLine1Number")
                         || methodName.equals("getLine1AlphaTag") || methodName.equals("getMsisdn")
-                        || methodName.equals("getVoiceMailNumber") || methodName.equals("getVoiceMailAlphaTag") ) ) {
+                        || methodName.equals("getVoiceMailNumber") || methodName.equals("getVoiceMailAlphaTag"))) {
                     Object value = method.invoke(obj, new Object[]{opPackageName});
                     return value;
                 }
@@ -241,13 +246,13 @@ public class TelephonyManagerInfo {
                 final Map<String, Object> fResultMap = resultMap;
 
                 // public java.lang.String getCompleteVoiceMailNumberForSubscriber(int subId) throws android.os.RemoteException;
-                if ( parameterTypes.length == 1 && parameterTypes[0] == int.class ) {
-                    if ( methodName.equals("getCompleteVoiceMailNumberForSubscriber") ) {
+                if (parameterTypes.length == 1 && parameterTypes[0] == int.class) {
+                    if (methodName.equals("getCompleteVoiceMailNumberForSubscriber")) {
 
                         SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
-                                int mId = (Integer) IReflectUtil.getFieldValue(info, "mId");
+                                int mId = info.getSubscriptionId();
                                 String key = fMethodName + "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId});
                                 if (value != null) {
@@ -274,9 +279,9 @@ public class TelephonyManagerInfo {
                 // public java.lang.String getMsisdnForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getVoiceMailNumberForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getVoiceMailAlphaTagForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
-                if ( parameterTypes.length == 2 && parameterTypes[0] == int.class && parameterTypes[1] == String.class ) {
+                if (parameterTypes.length == 2 && parameterTypes[0] == int.class && parameterTypes[1] == String.class) {
 
-                    if ( methodName.equals("getNaiForSubscriber") || methodName.equals("getImeiForSubscriber")
+                    if (methodName.equals("getNaiForSubscriber") || methodName.equals("getImeiForSubscriber")
                             || methodName.equals("getDeviceSvnUsingSubId") || methodName.equals("getSubscriberIdForSubscriber")
                             || methodName.equals("getGroupIdLevel1ForSubscriber") || methodName.equals("getIccSerialNumberForSubscriber")
                             || methodName.equals("getLine1NumberForSubscriber") || methodName.equals("getLine1AlphaTagForSubscriber")
@@ -287,7 +292,7 @@ public class TelephonyManagerInfo {
                         SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
-                                int mId = (Integer) IReflectUtil.getFieldValue(info, "mId");
+                                int mId = info.getSubscriptionId();
                                 String key = fMethodName + "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
                                 if (value != null) {
@@ -310,8 +315,8 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getITelecomInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[] {});
-        Object telecomService = IReflectUtil.invokeMethod(telephonyManager, "getTelecomService", new Class[]{}, new Object[] {});
+        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[]{});
+        Object telecomService = IReflectUtil.invokeMethod(telephonyManager, "getTelecomService", new Class[]{}, new Object[]{});
         Object proxy = InvokerOfService.getProxy("com.android.internal.telecom.ITelecomService", "telecom");
 
         // The same ...
@@ -340,18 +345,24 @@ public class TelephonyManagerInfo {
                     }
 
                     // public android.content.ComponentName getDefaultPhoneApp() throws android.os.RemoteException; // important !!!
+                    // public java.util.List<android.telecom.PhoneAccountHandle> getAllPhoneAccountHandles() throws android.os.RemoteException;
 
                     Object value = method.invoke(Modifier.isStatic(method.getModifiers()) ? clazz : obj, new Object[]{});
                     return value;
                 }
 
+
                 // public boolean isTtySupported(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public int getCurrentTtyMode(java.lang.String callingPackage) throws android.os.RemoteException;
-                if ( parameterTypes.length == 1 && parameterTypes[0] == java.lang.String.class
-                        && ( methodName.equals("isTtySupported") || methodName.equals("getCurrentTtyMode") ) ) {
+                if (parameterTypes.length == 1 && parameterTypes[0] == java.lang.String.class
+                        && (methodName.equals("isTtySupported") || methodName.equals("getCurrentTtyMode"))) {
                     Object value = method.invoke(obj, new Object[]{opPackageName});
                     return value;
                 }
+
+
+                // TODO ... Hook 那边根据 getAllPhoneAccounts() 的值来处理
+                // public android.telecom.PhoneAccount getPhoneAccount(android.telecom.PhoneAccountHandle account) throws android.os.RemoteException
 
                 return null;
             }
