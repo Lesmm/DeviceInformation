@@ -14,6 +14,7 @@ import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
+import com.deviceinfo.ManagerInfoHelper;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,30 +35,32 @@ public class PackageManagerInfo {
     public static JSONObject getInfo(Context mContext) {
         PackageManager mApplicationPackageManager = mContext.getPackageManager();
 
-        // compare below two jsons
-        int flags = 0;
-        List<PackageInfo> allPackageInfos = mApplicationPackageManager.getInstalledPackages(flags);
-        int mflags = PackageManager.GET_ACTIVITIES | PackageManager.GET_PROVIDERS | PackageManager.GET_RECEIVERS | PackageManager.GET_SERVICES;
-        List<PackageInfo> mPackageInfos = mApplicationPackageManager.getInstalledPackages(mflags);
-        JSONArray json1 = new JSONArrayExtended(allPackageInfos);
-        JSONArray json2 = new JSONArrayExtended(mPackageInfos);
+        if (ManagerInfoHelper.IS_DEBUG) {
+            // compare below two jsons
+            int flags = 0;
+            List<PackageInfo> allPackageInfos = mApplicationPackageManager.getInstalledPackages(flags);
+            int mflags = PackageManager.GET_ACTIVITIES | PackageManager.GET_PROVIDERS | PackageManager.GET_RECEIVERS | PackageManager.GET_SERVICES;
+            List<PackageInfo> mPackageInfos = mApplicationPackageManager.getInstalledPackages(mflags);
+            JSONArray json1 = new JSONArrayExtended(allPackageInfos);
+            JSONArray json2 = new JSONArrayExtended(mPackageInfos);
 
+            // permission groups and permission
+            try {
+                List<PermissionGroupInfo> permissionGroupInfos = mApplicationPackageManager.getAllPermissionGroups(PackageManager.GET_META_DATA);
+                PermissionGroupInfo groupInfo = permissionGroupInfos.get(1);
+                PermissionGroupInfo permissionGroupInfo = mApplicationPackageManager.getPermissionGroupInfo(groupInfo.name, PackageManager.GET_META_DATA);
+                List<PermissionInfo> permissionInfos = mApplicationPackageManager.queryPermissionsByGroup(groupInfo.name, PackageManager.GET_META_DATA);
+                Log.d("", "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        // permission groups and permission
-        try {
-            List<PermissionGroupInfo> permissionGroupInfos = mApplicationPackageManager.getAllPermissionGroups(PackageManager.GET_META_DATA);
-            PermissionGroupInfo groupInfo = permissionGroupInfos.get(1);
-            PermissionGroupInfo permissionGroupInfo = mApplicationPackageManager.getPermissionGroupInfo(groupInfo.name, PackageManager.GET_META_DATA);
-            List<PermissionInfo> permissionInfos = mApplicationPackageManager.queryPermissionsByGroup(groupInfo.name, PackageManager.GET_META_DATA);
-            Log.d("", "");
-        } catch (Exception e) {
-            e.printStackTrace();
+            // getSystemSharedLibraryNames
+            Object proxy = InvokerOfService.getProxy("android.content.pm.IPackageManager", "package");
+            String[] names = (String[]) IReflectUtil.invokeMethod(proxy, "getSystemSharedLibraryNames", new Class[]{}, new Object[]{});
+
+            Log.d("DeviceInfo","_set_debug_here_");
         }
-
-        // getSystemSharedLibraryNames
-        Object proxy = InvokerOfService.getProxy("android.content.pm.IPackageManager", "package");
-        String[] names = (String[]) IReflectUtil.invokeMethod(proxy, "getSystemSharedLibraryNames", new Class[]{}, new Object[]{});
-
 
         // get info ......
         JSONObject packageInfo = getIPackageInfo(mContext);

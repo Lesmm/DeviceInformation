@@ -45,6 +45,8 @@ public class HardwareInfo {
             info = IFileUtil.readFileToText(key);
             filesInfos.put(key, info);
 
+            // TODO ... /system/build.prop & /default.prop 的处理
+
         } catch (Exception e) {
             e.printStackTrace();
         }

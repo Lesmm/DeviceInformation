@@ -9,6 +9,7 @@ import android.util.Log;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
+import com.deviceinfo.ManagerInfoHelper;
 
 import org.json.JSONObject;
 
@@ -34,28 +35,31 @@ public class SubscriptionManagerInfo {
 
         SubscriptionManager subscriptionManager = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
 
-        // ---------------------------- just for look ----------------------------
-        try {
-            Integer dataSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultDataSubId", new Class[]{}, new Object[]{});
-            Integer subId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultSmsSubId", new Class[]{}, new Object[]{});
-            Integer smsSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultSubId", new Class[]{}, new Object[]{});
-            Integer voiceSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultVoiceSubId", new Class[]{}, new Object[]{});
+        if (ManagerInfoHelper.IS_DEBUG) {
+            // ---------------------------- just for look ----------------------------
+            try {
+                Integer dataSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultDataSubId", new Class[]{}, new Object[]{});
+                Integer subId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultSmsSubId", new Class[]{}, new Object[]{});
+                Integer smsSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultSubId", new Class[]{}, new Object[]{});
+                Integer voiceSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultVoiceSubId", new Class[]{}, new Object[]{});
 
-            int activeCount = SubscriptionManager.from(mContext).getActiveSubscriptionInfoCount();  // 当前Active的个数
-            int activeCountMax = SubscriptionManager.from(mContext).getActiveSubscriptionInfoCountMax();    // 最大允许Active的个数
-            List<SubscriptionInfo> activeList = SubscriptionManager.from(mContext).getActiveSubscriptionInfoList();
-            SubscriptionInfo activeInfo = SubscriptionManager.from(mContext).getActiveSubscriptionInfo(1);   // 从1开始
+                int activeCount = SubscriptionManager.from(mContext).getActiveSubscriptionInfoCount();  // 当前Active的个数
+                int activeCountMax = SubscriptionManager.from(mContext).getActiveSubscriptionInfoCountMax();    // 最大允许Active的个数
+                List<SubscriptionInfo> activeList = SubscriptionManager.from(mContext).getActiveSubscriptionInfoList();
+                SubscriptionInfo activeInfo = SubscriptionManager.from(mContext).getActiveSubscriptionInfo(1);   // 从1开始
 
-            List<SubscriptionInfo> allList = (List<SubscriptionInfo>)IReflectUtil.invokeMethod(proxy, "getAllSubInfoList", new Class[]{String.class}, new Object[]{opPackageName});
-            int allCount = (Integer)IReflectUtil.invokeMethod(proxy, "getAllSubInfoCount", new Class[]{String.class}, new Object[]{opPackageName});
+                List<SubscriptionInfo> allList = (List<SubscriptionInfo>)IReflectUtil.invokeMethod(proxy, "getAllSubInfoList", new Class[]{String.class}, new Object[]{opPackageName});
+                int allCount = (Integer)IReflectUtil.invokeMethod(proxy, "getAllSubInfoCount", new Class[]{String.class}, new Object[]{opPackageName});
 
-            Log.d("DeviceInfo","_set_debug_here_");
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+                Log.d("DeviceInfo","_set_debug_here_");
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // ---------------------------- just for look ----------------------------
         }
-        // ---------------------------- just for look ----------------------------
+
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(proxy, new InvokerOfObject.InvokeHandler() {
             @Override

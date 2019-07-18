@@ -1,21 +1,16 @@
 package com.deviceinfo.info;
 
 import android.content.Context;
-import android.content.pm.ResolveInfo;
-import android.os.UserHandle;
 import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
 import com.deviceinfo.ManagerInfoHelper;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;

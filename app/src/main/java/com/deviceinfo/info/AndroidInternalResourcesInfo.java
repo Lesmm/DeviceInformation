@@ -38,7 +38,9 @@ public class AndroidInternalResourcesInfo {
 
         // --------------------------------- String  ---------------------------------
         JSONObject stringResultsJson = getResourcesKeysValues(mContext, "com.android.internal.R$string");
+        // --------------------------------- Boolean  ---------------------------------
         JSONObject boolResultsJson = getResourcesKeysValues(mContext, "com.android.internal.R$bool");
+        // --------------------------------- Integer  ---------------------------------
         JSONObject integerResultsJson = getResourcesKeysValues(mContext, "com.android.internal.R$integer");
 
         Log.d("DeviceInfo", "_set_debug_here_");

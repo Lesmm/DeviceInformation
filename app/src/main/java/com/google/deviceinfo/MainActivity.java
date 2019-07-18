@@ -19,6 +19,7 @@ import com.deviceinfo.info.ConnectivityManagerInfo;
 import com.deviceinfo.info.HardwareInfo;
 import com.deviceinfo.info.PackageManagerInfo;
 import com.deviceinfo.info.SubscriptionManagerInfo;
+import com.deviceinfo.info.SystemPropertiesInfo;
 import com.deviceinfo.info.TelephonyManagerInfo;
 
 import org.json.JSONException;
@@ -136,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
             JSONObject commandsInfos = HardwareInfo.getInfoInCommands();
             result.put("Files.Contents", filesInfos);
             result.put("Commands.Contents", commandsInfos);
+
+            JSONObject propertiesInfo = SystemPropertiesInfo.getInfo(this);
 
             Log.d("DeviceInfo","_set_debug_here_");
         } catch (JSONException e) {
