@@ -40,7 +40,16 @@ public class SystemPropertiesInfo {
             Log.d("DeviceInfo","_set_debug_here_");
         }
 
-        return null;
+        // TODO ... Hook 那边把 所有 Keys-Values 整成 [key]: [value] 格式来返回当APP 执行 getprop 时, 因为它比较大，所以不弄到 Commands.Contents 了
+        // TODO ... Hook 那边把 所有 Keys-Values 转成 Properties 文件格式写到 /system/build.prop 去, 因为它比较大，所以不弄到 Files.Contents 了
+        // TODO ... Hook 那边, 至于 /default.prop ，我们同样带上一份到 Files.Contents 里去，因为它比较小
+        JSONObject info = new JSONObject();
+        ManagerInfoHelper.mergeJSONObject(info, telephonyPropertiesInfo);
+        ManagerInfoHelper.mergeJSONObject(info, buildPropertiesInfo);
+        ManagerInfoHelper.mergeJSONObject(info, defaultPropertiesInfo);
+        ManagerInfoHelper.mergeJSONObject(info, telephonyPropertiesInfo);
+
+        return info;
     }
 
 
@@ -75,42 +84,11 @@ public class SystemPropertiesInfo {
     }
 
     public static JSONObject getBuildPropertiesInfo() {
-        JSONObject buildPropertiesInfo = new JSONObject();
-        try {
-            // /system/build.prop
-            Properties properties = new Properties();
-            properties.load(new BufferedReader(new FileReader("/system/build.prop")));
-
-            Enumeration enu = properties.propertyNames();
-            while (enu.hasMoreElements()) {
-                String key = (String) enu.nextElement();
-                Object propertyVal = properties.get(key);
-                buildPropertiesInfo.put(key, propertyVal);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return buildPropertiesInfo;
+        return getPropertiesInfoFromPropertiesFile("/system/build.prop");
     }
 
     public static JSONObject getDefaultPropertiesInfo() {
-        JSONObject buildPropertiesInfo = new JSONObject();
-        try {
-            // /default.prop
-            Properties properties = new Properties();
-            properties.load(new BufferedReader(new FileReader("/default.prop")));
-
-            Enumeration enu = properties.propertyNames();
-            while (enu.hasMoreElements()) {
-                String key = (String) enu.nextElement();
-                Object propertyVal = properties.get(key);
-                buildPropertiesInfo.put(key, propertyVal);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return buildPropertiesInfo;
+        return getPropertiesInfoFromPropertiesFile("/default.prop");
     }
 
     public static JSONObject getCommandGetpropPropertiesInfo() {
@@ -136,6 +114,25 @@ public class SystemPropertiesInfo {
         return buildPropertiesInfo;
     }
 
+    private static JSONObject getPropertiesInfoFromPropertiesFile(String propertiesFileName) {
+        JSONObject propertiesInfo = new JSONObject();
+        try {
+            // /system/build.prop
+            Properties properties = new Properties();
+            properties.load(new BufferedReader(new FileReader(propertiesFileName)));
+
+            Enumeration enu = properties.propertyNames();
+            while (enu.hasMoreElements()) {
+                String key = (String) enu.nextElement();
+                Object propertyVal = properties.get(key);
+                propertiesInfo.put(key, propertyVal);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return propertiesInfo;
+    }
 
     private static Object get(String key) {
         // Hook 那边会处理 getXXX 的返回值类型问题的了。这里全返回String也没关系。

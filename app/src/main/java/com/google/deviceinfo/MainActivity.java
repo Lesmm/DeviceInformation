@@ -3,16 +3,13 @@ package com.google.deviceinfo;
 import android.Manifest;
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.ConfigurationInfo;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.deviceinfo.InvokerOfService;
+import com.deviceinfo.ManagerInfoHelper;
 import com.deviceinfo.info.AndroidInternalResourcesInfo;
 import com.deviceinfo.info.BuildInfo;
 import com.deviceinfo.info.ConnectivityManagerInfo;
@@ -24,9 +21,6 @@ import com.deviceinfo.info.TelephonyManagerInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import common.modules.util.IReflectUtil;
 
@@ -85,31 +79,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void checkContextLoadedApkResources() {
-        Application application = getApplication();
-        Context baseContext = getBaseContext();
-        Context applicationContext = getApplicationContext();
+        if (ManagerInfoHelper.IS_DEBUG) {
+            Application application = getApplication();
+            Context baseContext = getBaseContext();
+            Context applicationContext = getApplicationContext();
 
-        Context baseContextApplicationContext =  baseContext.getApplicationContext();
-        Context applicationContextApplicationContext = applicationContext.getApplicationContext();
+            Context baseContextApplicationContext =  baseContext.getApplicationContext();
+            Context applicationContextApplicationContext = applicationContext.getApplicationContext();
 
-        Context applicationBaseContext = application.getBaseContext();
-        Context applicationApplicationContext = application.getApplicationContext();
+            Context applicationBaseContext = application.getBaseContext();
+            Context applicationApplicationContext = application.getApplicationContext();
 
-        Resources resources = getResources();
-        Resources applicationResources = application.getResources();
-        Resources baseContextResources = baseContext.getResources();
-        Resources applicationContextResources = applicationContext.getResources();
-        Resources applicationBaseContextResources = applicationBaseContext.getResources();
-        Resources applicationApplicationContextResources = applicationApplicationContext.getResources();
+            Resources resources = getResources();
+            Resources applicationResources = application.getResources();
+            Resources baseContextResources = baseContext.getResources();
+            Resources applicationContextResources = applicationContext.getResources();
+            Resources applicationBaseContextResources = applicationBaseContext.getResources();
+            Resources applicationApplicationContextResources = applicationApplicationContext.getResources();
 
 
-        Object loadedApk1 = IReflectUtil.getFieldValue(baseContext, "mPackageInfo");
-        Object loadedApk2 = IReflectUtil.getFieldValue(applicationBaseContext, "mPackageInfo");
+            Object loadedApk1 = IReflectUtil.getFieldValue(baseContext, "mPackageInfo");
+            Object loadedApk2 = IReflectUtil.getFieldValue(applicationBaseContext, "mPackageInfo");
 
-        Object mResources1 = IReflectUtil.getFieldValue(loadedApk1, "mResources");
-        Object mResources2 = IReflectUtil.getFieldValue(loadedApk2, "mResources");
+            Object mResources1 = IReflectUtil.getFieldValue(loadedApk1, "mResources");
+            Object mResources2 = IReflectUtil.getFieldValue(loadedApk2, "mResources");
 
-        Log.d("DeviceInfo","_set_debug_here_");
+            Log.d("DeviceInfo","_set_debug_here_");
+        }
     }
 
     public void getInfo() {
@@ -139,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             result.put("Commands.Contents", commandsInfos);
 
             JSONObject propertiesInfo = SystemPropertiesInfo.getInfo(this);
+            result.put("SystemProperties", propertiesInfo);
 
             Log.d("DeviceInfo","_set_debug_here_");
         } catch (JSONException e) {
