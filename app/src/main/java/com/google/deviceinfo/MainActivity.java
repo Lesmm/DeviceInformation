@@ -11,13 +11,19 @@ import android.util.Log;
 
 import com.deviceinfo.ManagerInfoHelper;
 import com.deviceinfo.info.AndroidInternalResourcesInfo;
+import com.deviceinfo.info.BluetoothManagerInfo;
 import com.deviceinfo.info.BuildInfo;
 import com.deviceinfo.info.ConnectivityManagerInfo;
+import com.deviceinfo.info.DisplayManagerInfo;
 import com.deviceinfo.info.HardwareInfo;
 import com.deviceinfo.info.PackageManagerInfo;
+import com.deviceinfo.info.SettingsInfo;
 import com.deviceinfo.info.SubscriptionManagerInfo;
+import com.deviceinfo.info.SystemInfo;
 import com.deviceinfo.info.SystemPropertiesInfo;
 import com.deviceinfo.info.TelephonyManagerInfo;
+import com.deviceinfo.info.WifiManagerInfo;
+import com.deviceinfo.info.WindowManagerInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,6 +118,18 @@ public class MainActivity extends AppCompatActivity {
         try {
             JSONObject result = new JSONObject();
 
+            JSONObject wifiInfo = WifiManagerInfo.getInfo(this);
+            result.put("Wifi", wifiInfo);
+
+            JSONObject displayInfo = DisplayManagerInfo.getInfo(this);
+            result.put("Display", displayInfo);
+
+            JSONObject windowInfo = WindowManagerInfo.getInfo(this);
+            result.put("Window", windowInfo);
+
+            JSONObject bluetoothInfo = BluetoothManagerInfo.getInfo(this);
+            result.put("Bluetooth", bluetoothInfo);
+
             JSONObject buildInfo = BuildInfo.getBuildInfo(this);
             JSONObject buildVersionInfo = BuildInfo.getBuildVersionInfo(this);
             result.put("Build", buildInfo);
@@ -129,14 +147,21 @@ public class MainActivity extends AppCompatActivity {
             JSONObject androidInternalResourcesInfo = AndroidInternalResourcesInfo.getInfo(this);
             result.put("ResourcesValues", androidInternalResourcesInfo);
 
-            JSONObject filesInfos = HardwareInfo.getInfoInFiles();
-            JSONObject commandsInfos = HardwareInfo.getInfoInCommands();
+            JSONObject filesInfos = HardwareInfo.getInfoInFiles(this);
+            JSONObject commandsInfos = HardwareInfo.getInfoInCommands(this);
             result.put("Files.Contents", filesInfos);
             result.put("Commands.Contents", commandsInfos);
 
             JSONObject propertiesInfo = SystemPropertiesInfo.getInfo(this);
             result.put("SystemProperties", propertiesInfo);
 
+            JSONObject systemInfo = SystemInfo.getInfo(this);
+            result.put("System", systemInfo);
+
+            JSONObject settingsInfo = SettingsInfo.getInfo(this);
+            result.put("Settings", settingsInfo);
+
+            Log.d("DeviceInfo","_set_debug_here_");
             Log.d("DeviceInfo","_set_debug_here_");
         } catch (JSONException e) {
             e.printStackTrace();

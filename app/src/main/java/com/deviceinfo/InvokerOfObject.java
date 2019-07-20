@@ -34,6 +34,7 @@ public class InvokerOfObject {
                 }
 
             } catch (Exception e) {
+                // 若无权限调用的方法，我们不会把 key or null 放到 result 中
                 e.printStackTrace();
                 Log.d("DeviceInfo","调service方法失败: " + methodName + " -> " + e.toString());
             }

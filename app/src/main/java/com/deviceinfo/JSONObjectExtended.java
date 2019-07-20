@@ -86,7 +86,7 @@ public class JSONObjectExtended extends JSONObject {
 
 
     /* Extend Methods */
-    private static JSONObject objectToJson(Object object) {
+    public static JSONObject objectToJson(Object object) {
         Map<?, ?> result = objectFieldNameValues(3, object);
 
         if (result == null) {
@@ -133,7 +133,7 @@ public class JSONObjectExtended extends JSONObject {
                     boolean isFinal = Modifier.isFinal(field.getModifiers());
 
                     // Class<?> type = field.getType();
-                    if ( isStatic && isFinal /*&& ( type == int.class || type == String.class || type == char[].class  )*/ ) {
+                    if ( isStatic && isFinal ) {
                         // TODO ... if fieldName characters are all uppercase ???
                         // TODO ... but Build.class also has static final ..., So Build.class not permitted use JSONObjectExtended
                         continue;

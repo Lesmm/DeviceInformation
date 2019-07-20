@@ -25,7 +25,7 @@ public class ConnectivityManagerInfo {
 
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        Object proxy = InvokerOfService.getProxy("android.net.IConnectivityManager", Context.CONNECTIVITY_SERVICE);
+        Object proxy = InvokerOfService.getProxy("android.net.IConnectivityManager", "connectivity"/*Context.CONNECTIVITY_SERVICE*/);
         final int userId = (Integer) IReflectUtil.invokeMethod(mContext, "getUserId", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(proxy, new InvokerOfObject.InvokeHandler() {
