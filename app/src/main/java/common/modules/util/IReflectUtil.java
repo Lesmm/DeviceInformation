@@ -1,5 +1,7 @@
 package common.modules.util;
 
+import android.util.Log;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -42,6 +44,11 @@ public class IReflectUtil {
             } catch (NoSuchFieldException e) {
                 clazz = clazz.getSuperclass();
             }
+        }
+
+        if (field == null) {
+            Log.d("__FATAL__", obj.getClass().getName() + " without field: " + fieldName );
+            return null;
         }
 
         try {

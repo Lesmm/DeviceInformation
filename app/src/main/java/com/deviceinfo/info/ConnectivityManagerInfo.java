@@ -114,18 +114,19 @@ public class ConnectivityManagerInfo {
                             iterateAllNetworkInfoList(mContext, new IterateNetworkInfoHandler() {
                                 @Override
                                 public void handle(NetworkInfo info) throws Exception {
+
                                     String methodKey = fMethodName + "_with_args";
-                                    Map getLinkPropertiesForTypeMap = (Map) fResultMap.get(methodKey);
-                                    if (getLinkPropertiesForTypeMap == null) {
-                                        getLinkPropertiesForTypeMap = new HashMap();
-                                        fResultMap.put(methodKey, getLinkPropertiesForTypeMap);
+                                    Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                    if (methodArgsMap == null) {
+                                        methodArgsMap = new HashMap();
+                                        fResultMap.put(methodKey, methodArgsMap);
                                     }
 
                                     int mNetworkType = info.getType();
                                     String key = "_arg0_int_" + mNetworkType;
                                     Object value = fMethod.invoke(fObj, new Object[]{mNetworkType});
                                     if (value != null) {
-                                        getLinkPropertiesForTypeMap.put(key, value);
+                                        methodArgsMap.put(key, value);
                                     }
 
                                 }
@@ -137,27 +138,29 @@ public class ConnectivityManagerInfo {
                             return value;
                         }
 
-
                     }
 
-                    if (parameterTypes[0] == android.net.Network.class) {
+                    // API LEVEL 21 才有 android.net.Network 类，Android 4.4 没有
+                    if ( parameterTypes[0].getName().equals("android.net.Network") ) {
+                    // if ( parameterTypes[0] == android.net.Network.class ) {
 
                         if (methodName.equals("getLinkProperties") || methodName.equals("getNetworkCapabilities")) {
                             iterateAllNetworkList(mContext, new IterateNetworkHandler() {
                                 @Override
                                 public void handle(Network info) throws Exception {
+
                                     String methodKey = fMethodName + "_with_args";
-                                    Map getLinkPropertiesMap = (Map) fResultMap.get(methodKey);
-                                    if (getLinkPropertiesMap == null) {
-                                        getLinkPropertiesMap = new HashMap();
-                                        fResultMap.put(methodKey, getLinkPropertiesMap);
+                                    Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                    if (methodArgsMap == null) {
+                                        methodArgsMap = new HashMap();
+                                        fResultMap.put(methodKey, methodArgsMap);
                                     }
 
                                     int netId = (Integer) IReflectUtil.getFieldValue(info, "netId");
                                     String key = "_arg0_Network_" + netId;
                                     Object value = fMethod.invoke(fObj, new Object[]{info});
                                     if (value != null) {
-                                        getLinkPropertiesMap.put(key, value);
+                                        methodArgsMap.put(key, value);
                                     }
 
                                 }
@@ -180,7 +183,9 @@ public class ConnectivityManagerInfo {
         public void handle(Network info) throws Exception;
     }
 
-    private static Network[] allNetworkList = null;
+    // API LEVEL 21 才有 android.net.Network 类，Android 4.4 没有
+    private static Object[] allNetworkList = null;
+    // private static Network[] allNetworkList = null;  // 为了 运行时 不致于一加载类就Crash, 注释掉。
 
     public static void iterateAllNetworkList(Context mContext, IterateNetworkHandler handler) {
         if (allNetworkList == null) {
@@ -188,9 +193,9 @@ public class ConnectivityManagerInfo {
             allNetworkList = connectivityManager.getAllNetworks();
         }
 
-        for (int i = 0; i < allNetworkList.length; i++) {
+        for (int i = 0; allNetworkList != null && i < allNetworkList.length; i++) {
             try {
-                Network network = allNetworkList[i];
+                Network network = (Network)allNetworkList[i];
                 handler.handle(network);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -210,7 +215,7 @@ public class ConnectivityManagerInfo {
             allNetworkInfoList = connectivityManager.getAllNetworkInfo();
         }
 
-        for (int i = 0; i < allNetworkInfoList.length; i++) {
+        for (int i = 0; allNetworkInfoList != null && i < allNetworkInfoList.length; i++) {
             try {
                 NetworkInfo networkInfo = allNetworkInfoList[i];
                 handler.handle(networkInfo);

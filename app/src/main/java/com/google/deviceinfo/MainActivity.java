@@ -4,19 +4,26 @@ import android.Manifest;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
+import android.hardware.Sensor;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.deviceinfo.ManagerInfoHelper;
 import com.deviceinfo.info.AndroidInternalResourcesInfo;
+import com.deviceinfo.info.BatteryInfo;
 import com.deviceinfo.info.BluetoothManagerInfo;
 import com.deviceinfo.info.BuildInfo;
 import com.deviceinfo.info.ConnectivityManagerInfo;
 import com.deviceinfo.info.DisplayManagerInfo;
+import com.deviceinfo.info.ExtrasInfo;
 import com.deviceinfo.info.HardwareInfo;
+import com.deviceinfo.info.MediaInfo;
 import com.deviceinfo.info.PackageManagerInfo;
+import com.deviceinfo.info.SensorsInfo;
 import com.deviceinfo.info.SettingsInfo;
 import com.deviceinfo.info.SubscriptionManagerInfo;
 import com.deviceinfo.info.SystemInfo;
@@ -25,6 +32,7 @@ import com.deviceinfo.info.TelephonyManagerInfo;
 import com.deviceinfo.info.WifiManagerInfo;
 import com.deviceinfo.info.WindowManagerInfo;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable e) {
+                Log.d("DeviceInfo","-------------- uncaughtException --------------");
                 e.printStackTrace();
+                Log.d("DeviceInfo","-------------- uncaughtException --------------");
             }
         });
 
@@ -118,8 +128,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             JSONObject result = new JSONObject();
 
-            JSONObject wifiInfo = WifiManagerInfo.getInfo(this);
-            result.put("Wifi", wifiInfo);
+            JSONObject batteryInfo = BatteryInfo.getInfo(this);
+            result.put("Battery", batteryInfo);
+
+            JSONArray sensorsInfo = SensorsInfo.getInfo(this);
+            result.put("Sensors", sensorsInfo);
 
             JSONObject displayInfo = DisplayManagerInfo.getInfo(this);
             result.put("Display", displayInfo);
@@ -135,13 +148,16 @@ public class MainActivity extends AppCompatActivity {
             result.put("Build", buildInfo);
             result.put("Build.VERSION", buildVersionInfo);
 
-            JSONObject telephonyInfo = TelephonyManagerInfo.getInfo(this);
-            JSONObject subscriptionInfo = SubscriptionManagerInfo.getInfo(this);
-            JSONObject packageInfo = PackageManagerInfo.getInfo(this);
-            JSONObject connectivityInfo = ConnectivityManagerInfo.getInfo(this);
-            result.put("Telephony", telephonyInfo);
+            JSONObject subscriptionInfo = SubscriptionManagerInfo.getInfo(this);    // 得放在 TelephonyManagerInfo 前，因为 TelephonyManagerInfo 会调iterate*方法，不提前会crash
             result.put("Subscription", subscriptionInfo);
+
+            JSONObject telephonyInfo = TelephonyManagerInfo.getInfo(this);
+            result.put("Telephony", telephonyInfo);
+
+            JSONObject packageInfo = PackageManagerInfo.getInfo(this);
             result.put("Package", packageInfo);
+
+            JSONObject connectivityInfo = ConnectivityManagerInfo.getInfo(this);
             result.put("Connectivity", connectivityInfo);
 
             JSONObject androidInternalResourcesInfo = AndroidInternalResourcesInfo.getInfo(this);
@@ -161,7 +177,15 @@ public class MainActivity extends AppCompatActivity {
             JSONObject settingsInfo = SettingsInfo.getInfo(this);
             result.put("Settings", settingsInfo);
 
-            Log.d("DeviceInfo","_set_debug_here_");
+            JSONObject wifiInfo = WifiManagerInfo.getInfo(this);    // 因为扫描，会比较久
+            result.put("Wifi", wifiInfo);
+
+            JSONObject mediaInfo = MediaInfo.getInfo(this);
+            result.put("Media", mediaInfo);
+
+            JSONObject extrasInfo = ExtrasInfo.getInfo(this);
+            result.put("Extras", extrasInfo);
+
             Log.d("DeviceInfo","_set_debug_here_");
         } catch (JSONException e) {
             e.printStackTrace();

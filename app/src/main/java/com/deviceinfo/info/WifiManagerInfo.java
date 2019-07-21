@@ -20,7 +20,7 @@ import common.modules.util.IArrayUtil;
 import common.modules.util.IReflectUtil;
 import common.modules.util.IReflectUtilWrapper;
 
-// TODO ... 已对比API CM13.0, CM14.1, ANDROID 8.1, CM11.0 及 CM12.1 还没对比
+// 已对比完CM11.0,CM12.1,CM13.0,MKO-MR1
 public class WifiManagerInfo {
 
     public static JSONObject getInfo(Context mContext) {
@@ -82,11 +82,15 @@ public class WifiManagerInfo {
                     // public java.lang.String getCurrentNetworkWpsNfcConfigurationToken() throws android.os.RemoteException;      // Android 8.1
                     // public java.util.List<android.net.wifi.hotspot2.PasspointConfiguration> getPasspointConfigurations() throws android.os.RemoteException; // Android 8.1
 
+                    // public android.os.Messenger getWifiStateMachineMessenger() throws android.os.RemoteException;        // Android 4.4
+                    // public android.net.wifi.WifiEapSimInfo getSimInfo() throws android.os.RemoteException;               // Android 5.1 特有的
+
                     if (methodName.equals("getAggressiveHandover") || methodName.equals("getAllowScansWithTraffic") || methodName.equals("getEnableAutoJoinWhenAssociated") ||
                             methodName.equals("getFrequencyBand") || methodName.equals("getHalBasedAutojoinOffload") || methodName.equals("getSupportedFeatures") ||
                             methodName.equals("getVerboseLoggingLevel") || methodName.equals("getWifiEnabledState") || methodName.equals("getWifiApEnabledState") ||
                             methodName.equals("getChannelList") || methodName.equals("getWifiServiceMessenger") || methodName.equals("reportActivityInfo") ||
-                            methodName.equals("getCurrentNetworkWpsNfcConfigurationToken") || methodName.equals("getPasspointConfigurations")) {
+                            methodName.equals("getCurrentNetworkWpsNfcConfigurationToken") || methodName.equals("getPasspointConfigurations") || methodName.equals("getWifiStateMachineMessenger") ||
+                            methodName.equals("getSimInfo") ) {
                         return null;
                     }
 

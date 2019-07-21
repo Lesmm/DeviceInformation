@@ -312,7 +312,7 @@ public class PackageManagerInfo {
                 List<PackageInfo> allPackageInfos = mApplicationPackageManager.getInstalledPackages(flags);
                 allPackageInfoList = allPackageInfos;
             }
-            for (int i = 0; i < allPackageInfoList.size(); i++) {
+            for (int i = 0; allPackageInfoList != null && i < allPackageInfoList.size(); i++) {
                 try {
                     PackageInfo info = allPackageInfoList.get(i);
                     handler.handle(info);
@@ -339,7 +339,7 @@ public class PackageManagerInfo {
                 List<PackageInfo> mPackageInfos = mApplicationPackageManager.getInstalledPackages(mflags);
                 activityPackageInfoList = mPackageInfos;
             }
-            for (int i = 0; i < activityPackageInfoList.size(); i++) {
+            for (int i = 0; activityPackageInfoList != null && i < activityPackageInfoList.size(); i++) {
                 try {
                     PackageInfo info = activityPackageInfoList.get(i);
                     handler.handle(info);

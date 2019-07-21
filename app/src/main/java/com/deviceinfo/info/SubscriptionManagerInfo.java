@@ -22,17 +22,36 @@ import common.modules.util.IReflectUtil;
 
 public class SubscriptionManagerInfo {
 
+    private static int isSupportedFeatureSubscription = -1;
+
     public static JSONObject getInfo(Context mContext) {
         JSONObject subInfo = getISubInfo(mContext);
 
         return subInfo;
     }
 
+    private static boolean isSupportedFeatureSubscription() {
+        if (isSupportedFeatureSubscription == -1) {
+            IBinder mRemote = InvokerOfService.getService ("isub");
+            if (mRemote == null) {
+                isSupportedFeatureSubscription = 0;
+            } else {
+                isSupportedFeatureSubscription = 1;
+            }
+        }
+        return isSupportedFeatureSubscription == 1;
+    }
+
     public static JSONObject getISubInfo(final Context mContext) {
         IBinder mRemote = InvokerOfService.getService ("isub");
+
+        // Android 4.4 无此服务 及 SubscriptionManager、SubscriptionInfo 这些 class
+        if (!isSupportedFeatureSubscription()) {
+            return null;
+        }
+
         Object proxy = InvokerOfService.asInterface("com.android.internal.telephony.ISub$Stub", mRemote);
         final String opPackageName = mContext.getPackageName();
-
         SubscriptionManager subscriptionManager = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
 
         if (ManagerInfoHelper.IS_DEBUG) {
@@ -176,6 +195,10 @@ public class SubscriptionManagerInfo {
 
     private static List<SubscriptionInfo> activeSubscriptionInfoList = null;
     public static void IterateActiveSubscriptionInfoList(Context mContext, IterateHandler handler) {
+        if (!isSupportedFeatureSubscription()) {
+            return;
+        }
+
         try {
 
             if (activeSubscriptionInfoList == null) {
@@ -201,6 +224,10 @@ public class SubscriptionManagerInfo {
 
     private static List<SubscriptionInfo> allSubscriptionInfoList = null;
     public static void IterateAllSubscriptionInfoList(Context mContext, IterateHandler handler) {
+        if (!isSupportedFeatureSubscription()) {
+            return;
+        }
+
         try {
 
             if (allSubscriptionInfoList == null) {

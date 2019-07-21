@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 
 import common.modules.util.IReflectUtil;
@@ -36,7 +37,7 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getITelephonyInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[]{});
+        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
         Object iTelephony = IReflectUtil.invokeMethod(telephonyManager, "getITelephony", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(iTelephony, new InvokerOfObject.InvokeHandler() {
@@ -125,15 +126,26 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getDataEnabled") || methodName.equals("getCdmaMdn")
                             || methodName.equals("getCdmaMin") || methodName.equals("getAtrUsingSubId")
                     ) {
-                        SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+
+                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
+
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
                                 int mId = info.getSubscriptionId();
-                                String key = fMethodName + "_arg0_int_" + mId;
+                                String key = "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId});
                                 if (value != null) {
-                                    fResultMap.put(key, value);
+                                    methodArgsMap.put(key, value);
                                 }
+
                             }
                         });
                     }
@@ -167,15 +179,25 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getLine1AlphaTagForDisplay")
                     ) {
 
-                        SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
+
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
                                 int mId = info.getSubscriptionId();
-                                String key = fMethodName + "_arg0_int_" + mId;
+                                String key = "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
                                 if (value != null) {
-                                    fResultMap.put(key, value);
+                                    methodArgsMap.put(key, value);
                                 }
+
                             }
                         });
 
@@ -192,7 +214,7 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getIPhoneSubInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[]{});
+        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
         Object iPhoneSubInfo = IReflectUtil.invokeMethod(telephonyManager, "getSubscriberInfo", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(iPhoneSubInfo, new InvokerOfObject.InvokeHandler() {
@@ -244,15 +266,25 @@ public class TelephonyManagerInfo {
                 if (parameterTypes.length == 1 && parameterTypes[0] == int.class) {
                     if (methodName.equals("getCompleteVoiceMailNumberForSubscriber")) {
 
-                        SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
+
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
                                 int mId = info.getSubscriptionId();
-                                String key = fMethodName + "_arg0_int_" + mId;
+                                String key = "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId});
                                 if (value != null) {
-                                    fResultMap.put(key, value);
+                                    methodArgsMap.put(key, value);
                                 }
+
                             }
                         });
 
@@ -284,15 +316,25 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getVoiceMailAlphaTagForSubscriber")
                     ) {
 
-                        SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
+
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
                                 int mId = info.getSubscriptionId();
-                                String key = fMethodName + "_arg0_int_" + mId;
+                                String key = "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
                                 if (value != null) {
-                                    fResultMap.put(key, value);
+                                    methodArgsMap.put(key, value);
                                 }
+
                             }
                         });
 
@@ -310,9 +352,14 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getITelecomInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(telephonyManager, "getOpPackageName", new Class[]{}, new Object[]{});
+        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
         Object telecomService = IReflectUtil.invokeMethod(telephonyManager, "getTelecomService", new Class[]{}, new Object[]{});
         Object proxy = InvokerOfService.getProxy("com.android.internal.telecom.ITelecomService", "telecom");
+
+        // Android 4.4 无此 Service
+        if (proxy == null) {
+            return null;
+        }
 
         // The same ...
         Object mRemote = IReflectUtil.getFieldValue(telecomService, "mRemote");

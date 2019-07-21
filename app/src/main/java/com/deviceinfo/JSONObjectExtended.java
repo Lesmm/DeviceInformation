@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -113,8 +112,12 @@ public class JSONObjectExtended extends JSONObject {
         Boolean isClass = obj instanceof Class;
         Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();
 
-        if ( clazz == Bitmap.class || clazz == Color.class || clazz == BitmapDrawable.class ||
-                clazz == ColorDrawable.class || clazz == Drawable.class  || clazz == Icon.class ) {
+        if ( clazz == Bitmap.class || clazz == Color.class ||
+                clazz == BitmapDrawable.class || clazz == ColorDrawable.class || clazz == Drawable.class) {
+            return null;
+        }
+        String clazzName = clazz.getName();
+        if (clazzName.equals("android.graphics.drawable.Icon")) {       // API < 23 没有 Icon.class 类
             return null;
         }
 

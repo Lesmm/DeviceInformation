@@ -4,7 +4,8 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.google.deviceinfo"
-        minSdkVersion 23
+        minSdkVersion 19
+//        minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
