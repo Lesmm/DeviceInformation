@@ -2,7 +2,7 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
 
 import org.json.JSONObject;
 
@@ -80,8 +80,8 @@ public class SystemInfo {
 
         // 合并
 
-        ManagerInfoHelper.mergeJSONObject(info, propsInfo);
-        ManagerInfoHelper.mergeJSONObject(info, unchangeablePropsInfo);
+        InfoJsonHelper.mergeJSONObject(info, propsInfo);
+        InfoJsonHelper.mergeJSONObject(info, unchangeablePropsInfo);
 
         return info;
     }

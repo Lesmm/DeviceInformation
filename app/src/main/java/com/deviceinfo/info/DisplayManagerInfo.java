@@ -7,7 +7,8 @@ import android.util.Log;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
+import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
 
@@ -22,7 +23,7 @@ public class DisplayManagerInfo {
 
     public static JSONObject getInfo(Context mContext) {
 
-        if (ManagerInfoHelper.IS_DEBUG) {
+        if (Manager.IS_DEBUG) {
             try {
                 // class android.hardware.display.DisplayManager
                 Object object = mContext.getSystemService(Context.DISPLAY_SERVICE);

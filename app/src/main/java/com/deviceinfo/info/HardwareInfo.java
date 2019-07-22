@@ -8,7 +8,8 @@ import android.util.Log;
 
 import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
+import com.deviceinfo.Manager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public class HardwareInfo {
 
     public static JSONObject getInfoInFiles(Context mContext) {
 
-        if (ManagerInfoHelper.IS_DEBUG) {
+        if (Manager.IS_DEBUG) {
             try {
                 ActivityManager am = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -172,7 +173,7 @@ public class HardwareInfo {
 
             // TODO ... Hook 那边 拿所有 SystemPropertiesInfo 的Keys-Values整成[key]: [value]格式来返回当APP 执行 getprop 时， getprop 的内容不在这里带上了。
             // TODO ... Hook 那边 根据下面命令的结果 来处理 getprop 带上具体一个Key的情况
-            if(ManagerInfoHelper.IS_DEBUG) {
+            if(Manager.IS_DEBUG) {
                 command = "getprop";
                 output = IProcessUtil.execCommands(command);
                 // commandsInfos.put(command, output);

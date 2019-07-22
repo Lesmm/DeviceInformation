@@ -7,11 +7,9 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-public class ManagerInfoHelper {
+public class InfoJsonHelper {
 
-    public static final Boolean IS_DEBUG = true;
-
-    public static final String CLASS_NAME = ManagerInfoHelper.class.getSimpleName();
+    public static final String CLASS_NAME = InfoJsonHelper.class.getSimpleName();
 
     public static void mergeJSONObject(JSONObject destination, JSONObject source) {
         if (destination == null || source == null) {

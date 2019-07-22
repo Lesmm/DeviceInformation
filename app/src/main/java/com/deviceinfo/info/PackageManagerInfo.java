@@ -14,7 +14,8 @@ import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
+import com.deviceinfo.Manager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,7 +36,7 @@ public class PackageManagerInfo {
     public static JSONObject getInfo(Context mContext) {
         PackageManager mApplicationPackageManager = mContext.getPackageManager();
 
-        if (ManagerInfoHelper.IS_DEBUG) {
+        if (Manager.IS_DEBUG) {
             // compare below two jsons
             int flags = 0;
             List<PackageInfo> allPackageInfos = mApplicationPackageManager.getInstalledPackages(flags);
@@ -173,15 +174,22 @@ public class PackageManagerInfo {
                     // public android.content.ComponentName getHomeActivities(java.util.List<android.content.pm.ResolveInfo> outHomeCandidates) throws android.os.RemoteException;
                     if (parameterTypes[0] == java.util.List.class) {
                         if (methodName.equals("getHomeActivities")) {
+
+                            Map methodResultMap = (Map) resultMap.get(methodName);
+                            if (methodResultMap == null) {
+                                methodResultMap = new HashMap();
+                                resultMap.put(methodName, methodResultMap);
+                            }
+
                             List<ResolveInfo> resolveInfos = new ArrayList<>();
                             Object value = method.invoke(obj, new Object[]{resolveInfos});
 
                             if (value != null) {
-                                resultMap.put("returnValue", value);
+                                methodResultMap.put("returnValue", value);
                             }
                             if (resolveInfos.size() != 0) {
                                 JSONArray array = translateResolveInfo2JSONArray(resolveInfos);
-                                resultMap.put("outHomeCandidates", array);
+                                methodResultMap.put("outHomeCandidates", array);
                             }
                             return null;
                         }

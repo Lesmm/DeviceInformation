@@ -7,7 +7,7 @@ import android.telephony.TelephonyManager;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
 
 import org.json.JSONObject;
 
@@ -28,9 +28,9 @@ public class TelephonyManagerInfo {
 
         JSONObject telephonyResult = new JSONObject();
 
-        ManagerInfoHelper.mergeJSONObject(telephonyResult, telephonyInfo);
-        ManagerInfoHelper.mergeJSONObject(telephonyResult, phoneSubInfo);
-        ManagerInfoHelper.mergeJSONObject(telephonyResult, telecomInfo);
+        InfoJsonHelper.mergeJSONObject(telephonyResult, telephonyInfo);
+        InfoJsonHelper.mergeJSONObject(telephonyResult, phoneSubInfo);
+        InfoJsonHelper.mergeJSONObject(telephonyResult, telecomInfo);
 
         return telephonyResult;
     }

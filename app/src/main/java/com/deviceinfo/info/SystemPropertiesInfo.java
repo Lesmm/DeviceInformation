@@ -3,7 +3,8 @@ package com.deviceinfo.info;
 import android.content.Context;
 import android.util.Log;
 
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
+import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
 
@@ -27,16 +28,16 @@ public class SystemPropertiesInfo {
         JSONObject defaultPropertiesInfo = getDefaultPropertiesInfo();
         JSONObject commandGetpropPropertiesInfo = getCommandGetpropPropertiesInfo();
 
-        if (ManagerInfoHelper.IS_DEBUG) {
+        if (Manager.IS_DEBUG) {
             // Diff对比了一下上面这几个JSON，commandGetpropPropertiesInfo 与 buildPropertiesInfo 确实大部分互有包含。但也有各自都没有的Key-Value
             JSONObject summaryJson = new JSONObject();
-            ManagerInfoHelper.mergeJSONObject(summaryJson, telephonyPropertiesInfo);
-            JSONObject jsonObject1 = ManagerInfoHelper.checkJSONObjectDuplicateKeysValues(summaryJson, buildPropertiesInfo);
-            ManagerInfoHelper.mergeJSONObject(summaryJson, buildPropertiesInfo);
-            JSONObject jsonObject2 = ManagerInfoHelper.checkJSONObjectDuplicateKeysValues(summaryJson, defaultPropertiesInfo);
-            ManagerInfoHelper.mergeJSONObject(summaryJson, defaultPropertiesInfo);
-            JSONObject jsonObject3 = ManagerInfoHelper.checkJSONObjectDuplicateKeysValues(summaryJson, commandGetpropPropertiesInfo);
-            ManagerInfoHelper.mergeJSONObject(summaryJson, commandGetpropPropertiesInfo);
+            InfoJsonHelper.mergeJSONObject(summaryJson, telephonyPropertiesInfo);
+            JSONObject jsonObject1 = InfoJsonHelper.checkJSONObjectDuplicateKeysValues(summaryJson, buildPropertiesInfo);
+            InfoJsonHelper.mergeJSONObject(summaryJson, buildPropertiesInfo);
+            JSONObject jsonObject2 = InfoJsonHelper.checkJSONObjectDuplicateKeysValues(summaryJson, defaultPropertiesInfo);
+            InfoJsonHelper.mergeJSONObject(summaryJson, defaultPropertiesInfo);
+            JSONObject jsonObject3 = InfoJsonHelper.checkJSONObjectDuplicateKeysValues(summaryJson, commandGetpropPropertiesInfo);
+            InfoJsonHelper.mergeJSONObject(summaryJson, commandGetpropPropertiesInfo);
             Log.d("DeviceInfo","_set_debug_here_");
         }
 
@@ -44,10 +45,10 @@ public class SystemPropertiesInfo {
         // TODO ... Hook 那边把 所有 Keys-Values 转成 Properties 文件格式写到 /system/build.prop 去, 因为它比较大，所以不弄到 Files.Contents 了
         // TODO ... Hook 那边, 至于 /default.prop ，我们同样带上一份到 Files.Contents 里去，因为它比较小
         JSONObject info = new JSONObject();
-        ManagerInfoHelper.mergeJSONObject(info, telephonyPropertiesInfo);
-        ManagerInfoHelper.mergeJSONObject(info, buildPropertiesInfo);
-        ManagerInfoHelper.mergeJSONObject(info, defaultPropertiesInfo);
-        ManagerInfoHelper.mergeJSONObject(info, telephonyPropertiesInfo);
+        InfoJsonHelper.mergeJSONObject(info, telephonyPropertiesInfo);
+        InfoJsonHelper.mergeJSONObject(info, buildPropertiesInfo);
+        InfoJsonHelper.mergeJSONObject(info, defaultPropertiesInfo);
+        InfoJsonHelper.mergeJSONObject(info, telephonyPropertiesInfo);
 
         return info;
     }

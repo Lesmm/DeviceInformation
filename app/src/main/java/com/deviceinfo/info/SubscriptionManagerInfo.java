@@ -9,7 +9,8 @@ import android.util.Log;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.ManagerInfoHelper;
+import com.deviceinfo.InfoJsonHelper;
+import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
 
@@ -54,7 +55,7 @@ public class SubscriptionManagerInfo {
         final String opPackageName = mContext.getPackageName();
         SubscriptionManager subscriptionManager = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
 
-        if (ManagerInfoHelper.IS_DEBUG) {
+        if (Manager.IS_DEBUG) {
             // ---------------------------- just for look ----------------------------
             try {
                 Integer dataSubId = (Integer) IReflectUtil.invokeMethod(proxy, "getDefaultDataSubId", new Class[]{}, new Object[]{});
