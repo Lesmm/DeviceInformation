@@ -6,10 +6,11 @@ import android.util.Log;
 
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
+import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.Manager;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
@@ -24,20 +25,47 @@ public class DisplayManagerInfo {
     public static JSONObject getInfo(Context mContext) {
 
         if (Manager.IS_DEBUG) {
-            try {
-                // class android.hardware.display.DisplayManager
-                Object object = mContext.getSystemService(Context.DISPLAY_SERVICE);
+            // class android.hardware.display.DisplayManager
+            Object object = mContext.getSystemService(Context.DISPLAY_SERVICE);
 
-                int[] displayIds = getDisplayIds();
-                Object[] displayInfos = getDisplayInfos();
-
-                Log.d("DeviceInfo", "_set_debug_here_");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Log.d("DeviceInfo", "_set_debug_here_");
         }
 
         JSONObject info = getIDisplayManagerInfo(mContext);
+
+        if (info.length() == 0) {
+            // 一加系统拿不到
+            // public android.view.DisplayInfo getDisplayInfo(int displayId) throws android.os.RemoteException;
+            // public int[] getDisplayIds() throws android.os.RemoteException;
+
+            int[] displayIds = getDisplayIds();
+            Object[] displayInfos = getDisplayInfos();
+
+            try {
+                info.put("getDisplayIds", new JSONArrayExtended(displayIds));
+
+                String methodKey = "getDisplayInfo" + "_with_args";
+                JSONObject methodArgsJson = info.optJSONObject(methodKey);
+                if (methodArgsJson == null) {
+                    methodArgsJson = new JSONObject();
+                    info.put(methodKey, methodArgsJson);
+                }
+
+                for (int i = 0; i < displayInfos.length; i++) {
+                    int displayId = i;
+
+                    String key = "_arg0_int_" + displayId;
+                    Object value = displayInfos[i];
+                    if (value != null) {
+                        methodArgsJson.put(key, new JSONObjectExtended(IReflectUtil.objectFieldNameValues(value)));
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
 
         return info;
     }
@@ -69,6 +97,11 @@ public class DisplayManagerInfo {
                 // WifiDisplayStatus 这个信息我们就不需要了
                 // public android.hardware.display.WifiDisplayStatus getWifiDisplayStatus() throws android.os.RemoteException;
                 if (methodName.equals("getWifiDisplayStatus")) {
+                    return null;
+                }
+
+                // TODO ... 从华为mate20拿到这玩意很多null的信息，没什么用。到时候看看源码这个方法是什么来的，Android9.0的源码还在pull着。
+                if (methodName.equals("getHwInnerService")) {
                     return null;
                 }
 

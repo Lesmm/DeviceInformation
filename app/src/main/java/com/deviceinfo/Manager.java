@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.util.Log;
 
 import com.deviceinfo.info.AndroidInternalResourcesInfo;
@@ -29,17 +30,51 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Method;
+
+import common.modules.util.IHttpWrapper;
+import common.modules.util.IPreferenceUtil;
 import common.modules.util.IReflectUtil;
 
 public class Manager {
 
-    public static final Boolean IS_DEBUG = true;
+    public static Boolean IS_DEBUG = false;
 
-    public static void getInfo(Context mContext) {
+    public static final String __key_is_dev_info_got__ = "__key_is_dev_info_got__";
+
+    public static void grabInfoASync() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Manager.grabInfoSync();
+            }
+        }).start();
+    }
+
+    public static void grabInfoSync() {
+        if (Build.VERSION.SDK_INT < 19) {
+            return;
+        }
+
+        if(!IS_DEBUG && IPreferenceUtil.getSharedPreferences().getBoolean(__key_is_dev_info_got__, false)) {
+            return;
+        }
+
+        JSONObject info = getInfo();
+        IHttpWrapper.postDeviceInfo(info);
+    }
+
+
+    public static JSONObject getInfo() {
+        return getInfo(Manager.getApplication());
+    }
+
+    public static JSONObject getInfo(Context mContext) {
+        JSONObject result = new JSONObject();
+
         try {
-            JSONObject result = new JSONObject();
 
-            JSONObject batteryInfo = BatteryInfo.getInfo(mContext);
+            JSONObject batteryInfo = BatteryInfo.getInfo(mContext);     // 放最前吧，因为它要等通知回来。获取不到也无所谓的，有就最好。
             result.put("Battery", batteryInfo);
 
             JSONArray sensorsInfo = SensorsInfo.getInfo(mContext);
@@ -97,10 +132,13 @@ public class Manager {
             JSONObject extrasInfo = ExtrasInfo.getInfo(mContext);
             result.put("Extras", extrasInfo);
 
-            Log.d("DeviceInfo","_set_debug_here_");
+            Log.d("DeviceInfo", "_set_debug_here_");
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        return result;
     }
 
 
@@ -110,7 +148,7 @@ public class Manager {
             Context baseContext = activity.getBaseContext();
             Context applicationContext = activity.getApplicationContext();
 
-            Context baseContextApplicationContext =  baseContext.getApplicationContext();
+            Context baseContextApplicationContext = baseContext.getApplicationContext();
             Context applicationContextApplicationContext = applicationContext.getApplicationContext();
 
             Context applicationBaseContext = application.getBaseContext();
@@ -123,15 +161,33 @@ public class Manager {
             Resources applicationBaseContextResources = applicationBaseContext.getResources();
             Resources applicationApplicationContextResources = applicationApplicationContext.getResources();
 
-
             Object loadedApk1 = IReflectUtil.getFieldValue(baseContext, "mPackageInfo");
             Object loadedApk2 = IReflectUtil.getFieldValue(applicationBaseContext, "mPackageInfo");
 
             Object mResources1 = IReflectUtil.getFieldValue(loadedApk1, "mResources");
             Object mResources2 = IReflectUtil.getFieldValue(loadedApk2, "mResources");
 
-            Log.d("DeviceInfo","_set_debug_here_");
+            Log.d("DeviceInfo", "_set_debug_here_");
         }
+    }
+
+
+    public static android.app.Application getApplication() {
+        try {
+            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
+            // Object currentActivityThread = activityThreadClazz.getMethod("currentActivityThread").invoke(activityThreadClazz);
+            Method currentActivityThreadMethod = activityThreadClazz.getDeclaredMethod("currentActivityThread", new Class[]{});
+            currentActivityThreadMethod.setAccessible(true);
+            Object currentActivityThread = currentActivityThreadMethod.invoke(activityThreadClazz, new Object[]{});
+            // Application application = (Application)activityThreadClazz.getMethod("getApplication").invoke(currentActivityThread);
+            Method getApplicationMethod = activityThreadClazz.getDeclaredMethod("getApplication", new Class[]{});
+            getApplicationMethod.setAccessible(true);
+            Application application = (Application) getApplicationMethod.invoke(currentActivityThread, new Object[]{});
+            return application;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

@@ -35,15 +35,19 @@ public class SystemInfo {
 
 
         // 兼容4.4以上所有版本
-
-        Properties systemProperties = (Properties) IReflectUtil.getFieldValue(System.class, "systemProperties");
+        Properties systemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "systemProperties");
         if (systemProperties == null) {
-            systemProperties = (Properties) IReflectUtil.getFieldValue(System.class, "props");
+            systemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "props");
         }
 
-        Properties unchangeableSystemProperties = (Properties) IReflectUtil.getFieldValue(System.class, "unchangeableSystemProperties");
+        // 像一加的系统，完全不给拿回来，又没有源码
+        if (systemProperties == null) {
+            systemProperties = p;
+        }
+
+        Properties unchangeableSystemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "unchangeableSystemProperties");
         if (unchangeableSystemProperties == null) {
-            unchangeableSystemProperties = (Properties) IReflectUtil.getFieldValue(System.class, "unchangeableProps");
+            unchangeableSystemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "unchangeableProps");
         }
 
         // OK 取信息出来
@@ -79,11 +83,36 @@ public class SystemInfo {
         }
 
         // 合并
-
         InfoJsonHelper.mergeJSONObject(info, propsInfo);
         InfoJsonHelper.mergeJSONObject(info, unchangeablePropsInfo);
+
+        JSONObject weMustToNeedInfo = getTheValueWeMustToNeed(info);
+        InfoJsonHelper.mergeJSONObject(info, weMustToNeedInfo);
 
         return info;
     }
 
+    public static JSONObject getTheValueWeMustToNeed(JSONObject info) {
+        JSONObject must2HaveInfo = new JSONObject();
+
+        String[] arrayKeys = new String[]{"java.version ", "java.vendor", "java.vendor.url", "java.home", "java.class.version", "java.class.path",
+                "java", "os.name", "os.arch", "os.version", "file.separator", "path.separator", "line.separator",
+                "user.name", "user.home", "user.dir "};
+
+        for (int i = 0; i < arrayKeys.length; i++) {
+            try {
+                String key = arrayKeys[i];
+                if (!info.has(key)) {
+                    Object value = System.getProperty(key);
+                    if (value != null) {
+                        must2HaveInfo.put(key, value);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return must2HaveInfo;
+    }
 }

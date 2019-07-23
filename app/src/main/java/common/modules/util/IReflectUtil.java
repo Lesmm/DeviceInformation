@@ -32,8 +32,12 @@ public class IReflectUtil {
      * Call Object Fields And Values Using Reflect
      */
     public static Object getFieldValue(Object obj, String fieldName) {
+        if (obj == null) {
+            return null;
+        }
         Boolean isClass = obj instanceof Class;
         Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();
+        String clazzName = clazz.getName();
 
         Field field = null; // do not use searchField() method, cause here neen to change clazz = ...
         while (clazz != null) {
@@ -47,7 +51,7 @@ public class IReflectUtil {
         }
 
         if (field == null) {
-            Log.d("__FATAL__", obj.getClass().getName() + " without field: " + fieldName );
+            Log.d("__FATAL__", clazzName + " without field: " + fieldName );
             return null;
         }
 
@@ -63,6 +67,9 @@ public class IReflectUtil {
     }
     
     public static void setFieldValue(Object obj, String fieldName, Object fieldValue) {
+        if (obj == null) {
+            return;
+        }
         Boolean isClass = obj instanceof Class;
         Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();
 
@@ -89,6 +96,9 @@ public class IReflectUtil {
      * Search field with superclass
      */
     public static Field searchField(Object obj, String fieldName) {
+        if (obj == null) {
+            return null;
+        }
         Boolean isClass = obj instanceof Class;
         Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();
 

@@ -126,8 +126,10 @@ public class WifiManagerInfo {
                             return null;
                         }
 
+                        // 这里我们需要8个就够了
+                        int length = onfiguredNetworks.size() > 8 ? 8 : onfiguredNetworks.size();
                         JSONArray array = new JSONArray();
-                        for (int i = 0; i < onfiguredNetworks.size(); i++) {
+                        for (int i = 0; i < length; i++) {
                             WifiConfiguration configuration = (WifiConfiguration) onfiguredNetworks.get(i);
                             Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(configuration, IArrayUtil.arrayToList(new String[]{"defaultGwMacAddress", "BSSID", "SSID", "preSharedKey",
                                     "autoJoinBSSID", "creatorName", "lastUpdateName"}));

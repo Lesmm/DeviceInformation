@@ -5,8 +5,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import com.deviceinfo.Manager;
+
+import common.modules.util.IHandlerUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,28 +47,86 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_WIFI_STATE,
                     Manifest.permission.CHANGE_WIFI_STATE,
 
-//                    Manifest.permission.CAMERA,
-//                    Manifest.permission.READ_SMS,
-//
-//                    Manifest.permission.READ_CONTACTS,
-//                    Manifest.permission.WRITE_CONTACTS,
-//
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                    Manifest.permission.READ_EXTERNAL_STORAGE,
-//
-//                    Manifest.permission.ACCESS_FINE_LOCATION,
-//                    Manifest.permission.ACCESS_COARSE_LOCATION,
-//
-//                    Manifest.permission.BODY_SENSORS,
-//                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_SMS,
+
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.WRITE_CONTACTS,
+
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+
+                    Manifest.permission.BODY_SENSORS,
+                    Manifest.permission.RECORD_AUDIO,
 
             }, 1);
         }
 
+        // Views
+        TextView buildModelTextView = findViewById(R.id.buildModelTextView);
+        buildModelTextView.setText(Build.MANUFACTURER + " - " + Build.MODEL);
+        buildModelTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // ------------------------------------------------>>>
+                final TextView textView = (TextView)v;
+                final int KEY_IS_GETTING = R.id.buildModelTextView;
+                Boolean isGetting = (Boolean)textView.getTag(KEY_IS_GETTING);
+                if (isGetting != null && isGetting.booleanValue()) {
+                    return;
+                } else {
+                    textView.setTag(KEY_IS_GETTING, true);
+                }
+                // ------------------------------------------------<<<
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // ------------------------------------------------>>>
+                        final long startTime = new java.util.Date().getTime();
+                        IHandlerUtil.postToMainThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                long diff = new java.util.Date().getTime() - startTime;
+                                int seconds = (int)(diff / 1000);
+                                textView.setText("获取中... " + seconds + "s");
+
+                                if ((Boolean)textView.getTag(KEY_IS_GETTING)) {
+                                    IHandlerUtil.postToMainThread(this);
+                                } else {
+                                    textView.setText(Build.MANUFACTURER + " - " + Build.MODEL);
+                                }
+                            }
+                        });
+                        // ------------------------------------------------<<<
+
+
+                        Manager.grabInfoSync();
+
+
+                        // ------------------------------------------------>>>
+                        IHandlerUtil.postToMainThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setTag(KEY_IS_GETTING, false);
+                            }
+                        });
+                        // ------------------------------------------------<<<
+
+                    }
+                }).start();
+            }
+        });
+
         // 开始
         Manager.checkContextLoadedApkResources(this);
 
-        Manager.getInfo(this);
+        // Manager.getInfo(this);
     }
 
 }

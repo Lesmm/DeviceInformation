@@ -26,7 +26,7 @@ public class ApplicationImpl extends Application {
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-                activity.setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
 
             @Override
@@ -78,29 +78,9 @@ public class ApplicationImpl extends Application {
         return resumedActivity;
     }
 
-    public static android.app.Application getApplication() {
-        try {
-
-            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
-            // Object currentActivityThread = activityThreadClazz.getMethod("currentActivityThread").invoke(activityThreadClazz);
-            Method currentActivityThreadMethod = activityThreadClazz.getDeclaredMethod("currentActivityThread", new Class[] {});
-            currentActivityThreadMethod.setAccessible(true);
-            Object currentActivityThread = currentActivityThreadMethod.invoke(activityThreadClazz, new Object[] {});
-            // Application application = (Application)activityThreadClazz.getMethod("getApplication").invoke(currentActivityThread);
-            Method getApplicationMethod = activityThreadClazz.getDeclaredMethod("getApplication", new Class[] {});
-            getApplicationMethod.setAccessible(true);
-            Application application = (Application)getApplicationMethod.invoke(currentActivityThread, new Object[] {});
-            return application;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
     /**
      * 从后台回到前台需要执行的逻辑
+     *
      * @param activity
      */
     private void backToApp(Activity activity) {
@@ -109,6 +89,7 @@ public class ApplicationImpl extends Application {
 
     /**
      * 离开应用压入后台或者退出应用
+     *
      * @param activity
      */
     private void leaveApp(Activity activity) {

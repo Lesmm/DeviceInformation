@@ -2,12 +2,14 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
 import com.deviceinfo.InfoJsonHelper;
+import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
 
@@ -127,8 +129,8 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getCdmaMin") || methodName.equals("getAtrUsingSubId")
                     ) {
 
-                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
-                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
 
@@ -150,12 +152,30 @@ public class TelephonyManagerInfo {
                         });
                     }
 
+                    // public boolean hasIccCardUsingSlotId(int slotId) throws android.os.RemoteException;
+                    if (methodName.equals("hasIccCardUsingSlotId")) {
+                        SubscriptionManagerInfo.ID.iterateActiveSlotIndexes(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
+                            @Override
+                            public void handle(int slotId) throws Exception {
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
+                                String key = "_arg0_int_" + slotId;
+                                Object value = fMethod.invoke(fObj, new Object[]{slotId});
+                                if (value != null) {
+                                    methodArgsMap.put(key, value);
+                                }
+                            }
+                        });
+                    }
+
                 }
 
                 if (parameterTypes.length == 2 && parameterTypes[0] == int.class && parameterTypes[1] == String.class) {
-
-                    // TODO ... phoneId , what is phoneId & how to get phoneId
-                    // public int getRadioAccessFamily(int phoneId, java.lang.String callingPackage) throws android.os.RemoteException;
 
                     // public boolean isOffhookForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                     // public boolean isRingingForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
@@ -179,8 +199,8 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getLine1AlphaTagForDisplay")
                     ) {
 
-                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
-                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
 
@@ -194,6 +214,33 @@ public class TelephonyManagerInfo {
                                 int mId = info.getSubscriptionId();
                                 String key = "_arg0_int_" + mId;
                                 Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
+                                if (value != null) {
+                                    methodArgsMap.put(key, value);
+                                }
+
+                            }
+                        });
+
+                    }
+
+
+                    // Note: phoneId can be got by subId in SubscriptionManager.getPhoneId(int subId) or ISub getPhoneId(int subId) interface ...
+                    // public int getRadioAccessFamily(int phoneId, java.lang.String callingPackage) throws android.os.RemoteException;
+                    if (methodName.equals("getRadioAccessFamily")) {
+
+                        SubscriptionManagerInfo.ID.iterateActivePhoneIds(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
+                            @Override
+                            public void handle(int phoneId) throws Exception {
+
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
+                                String key = "_arg0_int_" + phoneId;
+                                Object value = fMethod.invoke(fObj, new Object[]{phoneId, opPackageName});
                                 if (value != null) {
                                     methodArgsMap.put(key, value);
                                 }
@@ -266,8 +313,8 @@ public class TelephonyManagerInfo {
                 if (parameterTypes.length == 1 && parameterTypes[0] == int.class) {
                     if (methodName.equals("getCompleteVoiceMailNumberForSubscriber")) {
 
-                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
-                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
 
@@ -292,9 +339,6 @@ public class TelephonyManagerInfo {
 
                 }
 
-                // TODO ... phoneId , what is phoneId & how to get phoneId
-                // public java.lang.String getDeviceIdForPhone(int phoneId, java.lang.String callingPackage) throws android.os.RemoteException;
-
                 // public java.lang.String getNaiForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getImeiForSubscriber(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getDeviceSvnUsingSubId(int subId, java.lang.String callingPackage) throws android.os.RemoteException;
@@ -316,8 +360,8 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getVoiceMailAlphaTagForSubscriber")
                     ) {
 
-                        SubscriptionManagerInfo.IterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
-                        // SubscriptionManagerInfo.IterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.IterateHandler() {
+                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
                             @Override
                             public void handle(SubscriptionInfo info) throws Exception {
 
@@ -340,6 +384,32 @@ public class TelephonyManagerInfo {
 
                     }
 
+
+                    // public java.lang.String getDeviceIdForPhone(int phoneId, java.lang.String callingPackage) throws android.os.RemoteException;
+                    if (methodName.equals("getDeviceIdForPhone")) {
+
+                        SubscriptionManagerInfo.ID.iterateActivePhoneIds(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
+                            @Override
+                            public void handle(int phoneId) throws Exception {
+
+                                String methodKey = fMethodName + "_with_args";
+                                Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                                if (methodArgsMap == null) {
+                                    methodArgsMap = new HashMap();
+                                    fResultMap.put(methodKey, methodArgsMap);
+                                }
+
+                                String key = "_arg0_int_" + phoneId;
+                                Object value = fMethod.invoke(fObj, new Object[]{phoneId, opPackageName});
+                                if (value != null) {
+                                    methodArgsMap.put(key, value);
+                                }
+
+                            }
+                        });
+
+                    }
+
                 }
 
                 return null;
@@ -351,9 +421,11 @@ public class TelephonyManagerInfo {
 
 
     public static JSONObject getITelecomInfo(final Context mContext) {
-        TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
-        Object telecomService = IReflectUtil.invokeMethod(telephonyManager, "getTelecomService", new Class[]{}, new Object[]{});
+        Object opackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
+        if (opackageName == null) {
+            opackageName = mContext.getPackageName();
+        }
+        final Object opPackageName = opackageName;
         Object proxy = InvokerOfService.getProxy("com.android.internal.telecom.ITelecomService", "telecom");
 
         // Android 4.4 无此 Service
@@ -361,10 +433,14 @@ public class TelephonyManagerInfo {
             return null;
         }
 
-        // The same ...
-        Object mRemote = IReflectUtil.getFieldValue(telecomService, "mRemote");
-        Object mmRemote = IReflectUtil.getFieldValue(proxy, "mRemote");
-        Object mmmRemote = InvokerOfService.getService(Context.TELECOM_SERVICE);
+        if (Manager.IS_DEBUG) {
+            // The same ...
+            TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            Object telecomService = IReflectUtil.invokeMethod(telephonyManager, "getTelecomService", new Class[]{}, new Object[]{});
+            Object mRemote = IReflectUtil.getFieldValue(telecomService, "mRemote");
+            Object mmRemote = IReflectUtil.getFieldValue(proxy, "mRemote");
+            Object mmmRemote = InvokerOfService.getService(Context.TELECOM_SERVICE);
+        }
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(proxy, new InvokerOfObject.InvokeHandler() {
             @Override

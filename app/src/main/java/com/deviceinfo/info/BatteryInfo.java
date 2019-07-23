@@ -6,7 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
 
@@ -38,6 +39,8 @@ public class BatteryInfo {
 
     }
 
+    private static BroadcastReceiver broadcastReceiver = null;
+
 
     private static JSONObject getBroadcastBatteryInfo(Context mContext) {
 
@@ -49,7 +52,8 @@ public class BatteryInfo {
         intentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
         intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
         intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-        mContext.registerReceiver(new BroadcastReceiver() {
+
+        broadcastReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
                 Bundle bundle = intent.getExtras();
@@ -60,7 +64,7 @@ public class BatteryInfo {
                 IReflectUtil.invokeMethod(bundle, "unparcel", new Class[]{}, new Object[]{});
                 Map<String, Object> mMap = (Map<String, Object>) IReflectUtil.getFieldValue(bundle, "mMap");
                 JSONObject bundleInfos = new JSONObject(mMap);
-                Log.d("DeviceInfo","_set_debug_here_: battery");
+                Log.d("DeviceInfo", "_set_debug_here_: battery");
 
                 if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
 
@@ -70,10 +74,17 @@ public class BatteryInfo {
                         e.printStackTrace();
                     }
 
+                    // 得到了我们要的了，释放掉这个 BroadcastReceiver
+                    if (broadcastReceiver != null) {
+                        Manager.getApplication().unregisterReceiver(broadcastReceiver);
+                        broadcastReceiver = null;
+                    }
                 }
 
             }
-        }, intentFilter);
+        };
+
+        Manager.getApplication().registerReceiver(broadcastReceiver, intentFilter);
 
         return batteryInfo;
     }

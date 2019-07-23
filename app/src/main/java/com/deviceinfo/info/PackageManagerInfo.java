@@ -127,10 +127,21 @@ public class PackageManagerInfo {
                         // public java.lang.String[] getPackagesForUid(int uid) throws android.os.RemoteException;
                         // public java.lang.String getNameForUid(int uid) throws android.os.RemoteException;
                         if (methodName.equals("getPackagesForUid") || methodName.equals("getNameForUid")) {
+
+                            String methodKey = fMethodName + "_with_args";
+                            Map methodArgsMap = (Map) fResultMap.get(methodKey);
+                            if (methodArgsMap == null) {
+                                methodArgsMap = new HashMap();
+                                fResultMap.put(methodKey, methodArgsMap);
+                            }
+
                             // just one uid now: 1000
+                            String key = "_arg0_int_" + android.os.Process.SYSTEM_UID;
                             Object value = method.invoke(obj, new Object[]{android.os.Process.SYSTEM_UID});
-                            String key = methodName + "_arg0_int_" + android.os.Process.SYSTEM_UID;
-                            resultMap.put(key, value);
+                            if (value != null) {
+                                methodArgsMap.put(key, value);
+                            }
+
                             return null;    // already set into resultMap, just return null.
                             // 关于uid，除了这两个还有:
                             // public int getUidForSharedUser(java.lang.String sharedUserName) throws android.os.RemoteException;
