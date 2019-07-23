@@ -16,8 +16,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (!Manager.IS_DEBUG) {
+            return;
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         // 未捕捉异常
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {

@@ -41,7 +41,6 @@ public class BatteryInfo {
 
     private static BroadcastReceiver broadcastReceiver = null;
 
-
     private static JSONObject getBroadcastBatteryInfo(Context mContext) {
 
         final JSONObject batteryInfo = new JSONObject();
@@ -74,11 +73,12 @@ public class BatteryInfo {
                         e.printStackTrace();
                     }
 
-                    // 得到了我们要的了，释放掉这个 BroadcastReceiver
+                    // 得到了我们要的了，释放掉这个 BroadcastReceiver 实例
                     if (broadcastReceiver != null) {
                         Manager.getApplication().unregisterReceiver(broadcastReceiver);
                         broadcastReceiver = null;
                     }
+
                 }
 
             }

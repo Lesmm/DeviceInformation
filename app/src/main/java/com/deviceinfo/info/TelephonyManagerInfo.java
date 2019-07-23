@@ -2,13 +2,12 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 import android.telephony.SubscriptionInfo;
-import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 
+import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
@@ -20,6 +19,7 @@ import java.util.Map;
 
 import common.modules.util.IReflectUtil;
 
+// done with api diff
 public class TelephonyManagerInfo {
 
     public static JSONObject getInfo(Context mContext) {
@@ -39,7 +39,11 @@ public class TelephonyManagerInfo {
 
     public static JSONObject getITelephonyInfo(final Context mContext) {
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
+        Object packageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
+        if (packageName == null) {
+            packageName = mContext.getPackageName();
+        }
+        final Object opPackageName = packageName;
         Object iTelephony = IReflectUtil.invokeMethod(telephonyManager, "getITelephony", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(iTelephony, new InvokerOfObject.InvokeHandler() {
@@ -70,6 +74,13 @@ public class TelephonyManagerInfo {
                 // public byte[] getAtrUsingSubId(int subId) throws android.os.RemoteException;
                 // will crash when without sim card: com.android.phone E/PhoneInterfaceManager: [PhoneIntfMgr] getIccId: ICC ID is null or empty.
                 if (methodName.startsWith("getAtr")) {
+                    return null;
+                }
+
+                // public boolean showCallScreen() throws android.os.RemoteException    // Android 4.4
+                // public int getLastError() throws android.os.RemoteException;     // Android 4.4
+                // public byte[] getATR() throws android.os.RemoteException;        // Android 4.4
+                if (methodName.equals("showCallScreen") || methodName.equals("getLastError") || methodName.equals("getATR")) {
                     return null;
                 }
 
@@ -122,11 +133,18 @@ public class TelephonyManagerInfo {
                     // public java.lang.String getCdmaMdn(int subId) throws android.os.RemoteException;
                     // public java.lang.String getCdmaMin(int subId) throws android.os.RemoteException;
                     // public byte[] getAtrUsingSubId(int subId) throws android.os.RemoteException;         // TODO ... Check How to handle byte[] in Json end
+
+                    // public java.lang.String getEsn(int subId) throws android.os.RemoteException;     // Android 8.1
+                    // public java.lang.String getCdmaPrlVersion(int subId) throws android.os.RemoteException;  // Android 8.1
+                    // public android.telephony.SignalStrength getSignalStrength(int subId) throws android.os.RemoteException;
+
                     if (methodName.equals("getCallStateForSubscriber") || methodName.equals("getActivePhoneTypeForSubscriber")
                             || methodName.equals("getVoiceMessageCountForSubscriber") || methodName.equals("getIccOperatorNumericForData")
                             || methodName.equals("getPreferredNetworkType") || methodName.equals("getCellNetworkScanResults")
                             || methodName.equals("getDataEnabled") || methodName.equals("getCdmaMdn")
                             || methodName.equals("getCdmaMin") || methodName.equals("getAtrUsingSubId")
+                            || methodName.equals("getEsn") || methodName.equals("getCdmaPrlVersion")
+                            || methodName.equals("getSignalStrength")
                     ) {
 
                         SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
@@ -153,7 +171,8 @@ public class TelephonyManagerInfo {
                     }
 
                     // public boolean hasIccCardUsingSlotId(int slotId) throws android.os.RemoteException;
-                    if (methodName.equals("hasIccCardUsingSlotId")) {
+                    // public java.util.List<android.service.carrier.CarrierIdentifier> getAllowedCarriers(int slotIndex) throws android.os.RemoteException;  // Android 9.0
+                    if ( methodName.equals("hasIccCardUsingSlotId") || methodName.equals("getAllowedCarriers") ) {
                         SubscriptionManagerInfo.ID.iterateActiveSlotIndexes(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
                             @Override
                             public void handle(int slotId) throws Exception {
@@ -260,8 +279,13 @@ public class TelephonyManagerInfo {
     }
 
     public static JSONObject getIPhoneSubInfo(final Context mContext) {
+        // iphonesubinfo: [com.android.internal.telephony.IPhoneSubInfo]
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
+        Object packageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
+        if (packageName == null) {
+            packageName = mContext.getPackageName();
+        }
+        final Object opPackageName = packageName;
         Object iPhoneSubInfo = IReflectUtil.invokeMethod(telephonyManager, "getSubscriberInfo", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(iPhoneSubInfo, new InvokerOfObject.InvokeHandler() {
@@ -310,8 +334,16 @@ public class TelephonyManagerInfo {
                 final Map<String, Object> fResultMap = resultMap;
 
                 // public java.lang.String getCompleteVoiceMailNumberForSubscriber(int subId) throws android.os.RemoteException;
+                // public java.lang.String getIsimImpi(int subId) throws android.os.RemoteException;    // Android 9
+                // public java.lang.String getIsimDomain(int subId) throws android.os.RemoteException;  // Android 9
+                // public java.lang.String[] getIsimImpu(int subId) throws android.os.RemoteException;  // Android 9
+                // public java.lang.String getIsimIst(int subId) throws android.os.RemoteException;     // Android 9
+                // public java.lang.String[] getIsimPcscf(int subId) throws android.os.RemoteException; // Android 9
                 if (parameterTypes.length == 1 && parameterTypes[0] == int.class) {
-                    if (methodName.equals("getCompleteVoiceMailNumberForSubscriber")) {
+                    if (methodName.equals("getCompleteVoiceMailNumberForSubscriber")
+                            || methodName.equals("getIsimImpi") || methodName.equals("getIsimDomain") || methodName.equals("getIsimImpu")
+                            || methodName.equals("getIsimIst") || methodName.equals("getIsimPcscf")
+                    ) {
 
                         SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
                             // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
@@ -421,17 +453,14 @@ public class TelephonyManagerInfo {
 
 
     public static JSONObject getITelecomInfo(final Context mContext) {
-        Object opackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
-        if (opackageName == null) {
-            opackageName = mContext.getPackageName();
+        Object packageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
+        if (packageName == null) {
+            packageName = mContext.getPackageName();
         }
-        final Object opPackageName = opackageName;
+        final Object opPackageName = packageName;
         Object proxy = InvokerOfService.getProxy("com.android.internal.telecom.ITelecomService", "telecom");
 
-        // Android 4.4 无此 Service
-        if (proxy == null) {
-            return null;
-        }
+        // Android 5.0 开始才有 telecom Service
 
         if (Manager.IS_DEBUG) {
             // The same ...
@@ -456,11 +485,23 @@ public class TelephonyManagerInfo {
                     return null;
                 }
 
+                // all create methods
+                // public android.content.Intent createManageBlockedNumbersIntent() throws android.os.RemoteException;  // Android 8
+                if (methodName.startsWith("create")) {
+                    return null;
+                }
+
+                // public boolean endCall() throws android.os.RemoteException;
+                if (methodName.startsWith("endCall")) {
+                    return null;
+                }
+
+                // public android.telecom.TelecomAnalytics dumpCallAnalytics() throws android.os.RemoteException;   // Android 8
+                if (methodName.equals("dumpCallAnalytics")) {
+                    return null;
+                }
+
                 if (parameterTypes.length == 0) {
-                    // public boolean endCall() throws android.os.RemoteException;
-                    if (methodName.startsWith("endCall")) {
-                        return null;
-                    }
 
                     // public android.content.ComponentName getDefaultPhoneApp() throws android.os.RemoteException; // important !!!
                     // public java.util.List<android.telecom.PhoneAccountHandle> getAllPhoneAccountHandles() throws android.os.RemoteException;
@@ -472,8 +513,9 @@ public class TelephonyManagerInfo {
 
                 // public boolean isTtySupported(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public int getCurrentTtyMode(java.lang.String callingPackage) throws android.os.RemoteException;
+                // public boolean isInManagedCall(java.lang.String callingPackage) throws android.os.RemoteException;   // Android 8
                 if (parameterTypes.length == 1 && parameterTypes[0] == java.lang.String.class
-                        && (methodName.equals("isTtySupported") || methodName.equals("getCurrentTtyMode"))) {
+                        && (methodName.equals("isTtySupported") || methodName.equals("getCurrentTtyMode") || methodName.equals("isInManagedCall"))) {
                     Object value = method.invoke(obj, new Object[]{opPackageName});
                     return value;
                 }

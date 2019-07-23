@@ -14,7 +14,6 @@ import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.Manager;
 
 import org.json.JSONArray;

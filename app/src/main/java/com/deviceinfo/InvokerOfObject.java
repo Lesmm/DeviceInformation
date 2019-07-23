@@ -14,6 +14,9 @@ public class InvokerOfObject {
 
     public static Map<?, ?> invokeObjectMethods(Object obj, InvokeHandler handler) {
         Map<String, Object> result = new HashMap<String, Object>();
+        if (obj == null) {
+            return result;
+        }
 
         boolean isClass = obj instanceof Class;
         Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();

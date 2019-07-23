@@ -17,19 +17,38 @@ import java.util.List;
 
 public class ExtrasInfo {
 
-    public static JSONObject getInfo(final Context mContext) {
-
-        final JSONObject info = new JSONObject();
-
+    public static JSONObject getInfo(Context mContext) {
+        JSONObject info = new JSONObject();
 
         // 1. All interfaces address in other way
-        JSONObject addressInfo = new JSONObject();
+        JSONObject addressInfo = getAllInterfacesAddress();
         try {
             info.put("Network.Address", addressInfo);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        // 2. WebKit.UserAgent
+        String userAgent = getWebKitUserAgent(mContext);
+        try {
+            info.put("WebKit.UserAgent", userAgent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 3. 屏幕尺寸
+        JSONObject displayMetricsInfo = getDisplayMetricsInfo();
+        try {
+            info.put("Display.Metrics", displayMetricsInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return info;
+    }
+
+    private static JSONObject getAllInterfacesAddress() {
+        JSONObject addressInfo = new JSONObject();
         try {
             List<NetworkInterface> allInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface netInterface : allInterfaces) {
@@ -55,19 +74,33 @@ public class ExtrasInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return addressInfo;
+    }
 
+    private static JSONObject getDisplayMetricsInfo() {
+        WindowManager windowManager = (WindowManager) Manager.getApplication().getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(outMetrics);
 
-        // 2. WebKit.UserAgent
+        int widthPixels = outMetrics.widthPixels;
+        int heightPixels = outMetrics.heightPixels;
+        float density = outMetrics.density;
+        float densityDpi = outMetrics.densityDpi;
+        float xdpi = outMetrics.xdpi;
+        float ydpi = outMetrics.ydpi;
+
+        JSONObject displayMetricsInfo = JSONObjectExtended.objectToJson(outMetrics);
+        return displayMetricsInfo;
+    }
+
+    private static String getWebKitUserAgent(final Context mContext) {
+        final String results[] = new String[1];
+
         boolean isInMainThread = Looper.getMainLooper() == Looper.myLooper();
         if (isInMainThread) {
-
             // -------------------- the same ------------------
             String userAgent = new WebView(mContext).getSettings().getUserAgentString();
-            try {
-                info.put("WebKit.UserAgent", userAgent);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            results[0] = userAgent;
             // -------------------- the same ------------------
 
         } else {
@@ -75,14 +108,9 @@ public class ExtrasInfo {
             new android.os.Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-
                     // -------------------- the same ------------------
                     String userAgent = new WebView(mContext).getSettings().getUserAgentString();
-                    try {
-                        info.put("WebKit.UserAgent", userAgent);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    results[0] = userAgent;
                     // -------------------- the same ------------------
 
                     // go on ...
@@ -105,31 +133,11 @@ public class ExtrasInfo {
                     e.printStackTrace();
                 }
             }
+
         }
-
-
-
-        // 3. 屏幕尺寸
-        WindowManager windowManager = (WindowManager) Manager.getApplication().getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(outMetrics);
-        int widthPixels = outMetrics.widthPixels;
-        int heightPixels = outMetrics.heightPixels;
-        float density = outMetrics.density;
-        float densityDpi = outMetrics.densityDpi;
-        float xdpi = outMetrics.xdpi;
-        float ydpi = outMetrics.ydpi;
-
-        // Map outMetricsMap = IReflectUtil.objectFieldNameValues(outMetrics);
-        JSONObject displayMetricsInfo = JSONObjectExtended.objectToJson(outMetrics); //new JSONObject(outMetricsMap);
-
-        try {
-            info.put("Display.Metrics", displayMetricsInfo);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return info;
+        return results[0];
     }
+
+
 
 }

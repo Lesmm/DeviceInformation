@@ -20,7 +20,7 @@ import common.modules.util.IArrayUtil;
 import common.modules.util.IReflectUtil;
 import common.modules.util.IReflectUtilWrapper;
 
-// 已对比完CM11.0,CM12.1,CM13.0,MKO-MR1
+// done with api diff
 public class WifiManagerInfo {
 
     public static JSONObject getInfo(Context mContext) {
