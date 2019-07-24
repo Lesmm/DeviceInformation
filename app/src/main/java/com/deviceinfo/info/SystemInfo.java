@@ -96,8 +96,11 @@ public class SystemInfo {
         JSONObject must2HaveInfo = new JSONObject();
 
         String[] arrayKeys = new String[]{"java.version ", "java.vendor", "java.vendor.url", "java.home", "java.class.version", "java.class.path",
-                "java", "os.name", "os.arch", "os.version", "file.separator", "path.separator", "line.separator",
-                "user.name", "user.home", "user.dir "};
+                "http.agent", "java.runtime.name", "java.runtime.version", "java.vm.name", "java.vm.vendor", "java.vm.vendor.url",
+                "java.vm.specification.name", "java.vm.specification.vendor", "java.vm.specification.version",
+                "os.name", "os.arch", "os.version",
+                "file.separator", "path.separator", "line.separator",
+                "user.name", "user.home", "user.dir", "user.language", "user.region", "user.locale"};
 
         for (int i = 0; i < arrayKeys.length; i++) {
             try {
