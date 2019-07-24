@@ -1,9 +1,9 @@
 package com.google.deviceinfo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -12,7 +12,7 @@ import com.deviceinfo.Manager;
 
 import common.modules.util.IHandlerUtil;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -2,6 +2,7 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 import android.os.Looper;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.webkit.WebView;
@@ -40,6 +41,16 @@ public class ExtrasInfo {
         JSONObject displayMetricsInfo = getDisplayMetricsInfo();
         try {
             info.put("Display.Metrics", displayMetricsInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 4. DeviceId 再取一遍
+        try {
+            String deviceId = ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+            info.put("Telephony.DeviceId", deviceId);
+        } catch (SecurityException e) {
+            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
