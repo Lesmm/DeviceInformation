@@ -1,7 +1,6 @@
 package com.deviceinfo.info;
 
 import android.content.Context;
-import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
 
 import com.deviceinfo.InfoJsonHelper;
@@ -147,10 +146,9 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getSignalStrength")
                     ) {
 
-                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
-                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                        SubscriptionManagerInfo.ID.iterateActiveSubIds(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
                             @Override
-                            public void handle(SubscriptionInfo info) throws Exception {
+                            public void handle(int subId) throws Exception {
 
                                 String methodKey = fMethodName + "_with_args";
                                 Map methodArgsMap = (Map) fResultMap.get(methodKey);
@@ -159,9 +157,8 @@ public class TelephonyManagerInfo {
                                     fResultMap.put(methodKey, methodArgsMap);
                                 }
 
-                                int mId = info.getSubscriptionId();
-                                String key = "_arg0_int_" + mId;
-                                Object value = fMethod.invoke(fObj, new Object[]{mId});
+                                String key = "_arg0_int_" + subId;
+                                Object value = fMethod.invoke(fObj, new Object[]{subId});
                                 if (value != null) {
                                     methodArgsMap.put(key, value);
                                 }
@@ -218,10 +215,9 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getLine1AlphaTagForDisplay")
                     ) {
 
-                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
-                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                        SubscriptionManagerInfo.ID.iterateActiveSubIds(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
                             @Override
-                            public void handle(SubscriptionInfo info) throws Exception {
+                            public void handle(int subId) throws Exception {
 
                                 String methodKey = fMethodName + "_with_args";
                                 Map methodArgsMap = (Map) fResultMap.get(methodKey);
@@ -230,9 +226,8 @@ public class TelephonyManagerInfo {
                                     fResultMap.put(methodKey, methodArgsMap);
                                 }
 
-                                int mId = info.getSubscriptionId();
-                                String key = "_arg0_int_" + mId;
-                                Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
+                                String key = "_arg0_int_" + subId;
+                                Object value = fMethod.invoke(fObj, new Object[]{subId, opPackageName});
                                 if (value != null) {
                                     methodArgsMap.put(key, value);
                                 }
@@ -345,10 +340,9 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getIsimIst") || methodName.equals("getIsimPcscf")
                     ) {
 
-                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
-                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                        SubscriptionManagerInfo.ID.iterateActiveSubIds(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
                             @Override
-                            public void handle(SubscriptionInfo info) throws Exception {
+                            public void handle(int subId) throws Exception {
 
                                 String methodKey = fMethodName + "_with_args";
                                 Map methodArgsMap = (Map) fResultMap.get(methodKey);
@@ -357,9 +351,8 @@ public class TelephonyManagerInfo {
                                     fResultMap.put(methodKey, methodArgsMap);
                                 }
 
-                                int mId = info.getSubscriptionId();
-                                String key = "_arg0_int_" + mId;
-                                Object value = fMethod.invoke(fObj, new Object[]{mId});
+                                String key = "_arg0_int_" + subId;
+                                Object value = fMethod.invoke(fObj, new Object[]{subId});
                                 if (value != null) {
                                     methodArgsMap.put(key, value);
                                 }
@@ -392,10 +385,9 @@ public class TelephonyManagerInfo {
                             || methodName.equals("getVoiceMailAlphaTagForSubscriber")
                     ) {
 
-                        SubscriptionManagerInfo.INFO.iterateActiveSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
-                            // SubscriptionManagerInfo.INFO.iterateAllSubscriptionInfoList(mContext, new SubscriptionManagerInfo.INFO.IterateInfosHandler() {
+                        SubscriptionManagerInfo.ID.iterateActiveSubIds(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
                             @Override
-                            public void handle(SubscriptionInfo info) throws Exception {
+                            public void handle(int subId) throws Exception {
 
                                 String methodKey = fMethodName + "_with_args";
                                 Map methodArgsMap = (Map) fResultMap.get(methodKey);
@@ -404,9 +396,8 @@ public class TelephonyManagerInfo {
                                     fResultMap.put(methodKey, methodArgsMap);
                                 }
 
-                                int mId = info.getSubscriptionId();
-                                String key = "_arg0_int_" + mId;
-                                Object value = fMethod.invoke(fObj, new Object[]{mId, opPackageName});
+                                String key = "_arg0_int_" + subId;
+                                Object value = fMethod.invoke(fObj, new Object[]{subId, opPackageName});
                                 if (value != null) {
                                     methodArgsMap.put(key, value);
                                 }

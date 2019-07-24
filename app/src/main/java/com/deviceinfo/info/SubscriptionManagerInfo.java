@@ -311,7 +311,7 @@ public class SubscriptionManagerInfo {
             }
         }
 
-
+        // ---------------------- 遍历 活跃的 SubscriptionInfo 工具方法 ----------------------
         private static List<SubscriptionInfo> activeSubscriptionInfoList = null;
 
         public static List<SubscriptionInfo> getActiveSubscriptionInfoList(Context mContext) {
@@ -329,7 +329,7 @@ public class SubscriptionManagerInfo {
             iterateInfoList(getActiveSubscriptionInfoList(mContext), handler);
         }
 
-        // ---------------------- 遍历 全部 SubscriptionInfo 工具方法 ----------------------
+        // ---------------------- 遍历 全部的 SubscriptionInfo 工具方法 ----------------------
         private static List<SubscriptionInfo> allSubscriptionInfoList = null;
 
         public static List<SubscriptionInfo> getAllSubscriptionInfoList(Context mContext) {
