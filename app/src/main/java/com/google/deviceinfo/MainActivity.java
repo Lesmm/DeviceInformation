@@ -16,9 +16,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (!Manager.IS_DEBUG) {
-            return;
-        }
+//        if (!Manager.IS_DEBUG) {
+//            return;
+//        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
