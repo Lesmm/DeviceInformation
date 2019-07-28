@@ -268,8 +268,11 @@ public class PackageManagerInfo {
                 if (parameterTypes.length == 3) {
 
                     // public android.content.pm.PackageInfo getPackageInfo(java.lang.String packageName, int flags, int userId) throws android.os.RemoteException;
+
                     // TODO ... getApplicationInfo() Hook 那边根把 Packages list 里的 ApplicationInfo 来处理
                     // public android.content.pm.ApplicationInfo getApplicationInfo(java.lang.String packageName, int flags, int userId) throws android.os.RemoteException;
+
+                    // TODO ... 下面三个的参数类型都是 android.content.ComponentName
                     // TODO ... getActivityInfo() 待研究, 若 getPackageInfo 里带上 GET_ACTIVITIES flag 后有 ActivityInfo, 那么 Hook 那边要根据 Packages list 里的 ActivityInfo 来处理
                     // public android.content.pm.ActivityInfo getActivityInfo(android.content.ComponentName className, int flags, int userId) throws android.os.RemoteException;
                     // TODO ... 同上 getActivityInfo() 带上 GET_RECEIVERS flag

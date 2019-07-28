@@ -1,10 +1,13 @@
-package common.modules.util;
+package com.deviceinfo.network;
 
 import android.util.Log;
 
 import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
+
+import common.modules.util.IHttpUtil;
+import common.modules.util.IPreferenceUtil;
 
 public class IHttpWrapper {
 
@@ -29,6 +32,9 @@ public class IHttpWrapper {
             String manufacturer = buildInfo.optString("MANUFACTURER");
             String model = buildInfo.optString("MODEL");
 
+            JSONObject buildVersionInfo = deviceInfo.optJSONObject("Build.VERSION");
+            Integer sdkInt = buildVersionInfo.optInt("SDK_INT");
+
             JSONObject TelephonyInfo = deviceInfo.optJSONObject("Telephony");
             String device_id = TelephonyInfo.optString("getDeviceId");
 
@@ -36,6 +42,7 @@ public class IHttpWrapper {
             postJson.put("manufacturer", manufacturer);
             postJson.put("model", model);
             postJson.put("device_id", device_id);
+            postJson.put("sdk_int", sdkInt);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -32,7 +32,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
-import common.modules.util.IHttpWrapper;
+import com.deviceinfo.network.IHttpWrapper;
 import common.modules.util.IPreferenceUtil;
 import common.modules.util.IReflectUtil;
 

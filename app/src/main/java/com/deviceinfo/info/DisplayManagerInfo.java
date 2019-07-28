@@ -10,7 +10,6 @@ import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
 import com.deviceinfo.Manager;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;

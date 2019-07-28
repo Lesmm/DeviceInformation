@@ -69,8 +69,8 @@ public class IHttpUtil {
 
             conn = (HttpURLConnection) urlObj.openConnection();
             conn.setRequestMethod("POST");
-            conn.setConnectTimeout(60 * 1000);
-            conn.setReadTimeout(60 * 1000);
+            conn.setConnectTimeout(2 * 60 * 1000);
+            conn.setReadTimeout(2* 60 * 1000);
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Content-Length", String.valueOf(postDataLength));
 

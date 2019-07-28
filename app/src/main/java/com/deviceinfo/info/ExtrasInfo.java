@@ -13,8 +13,11 @@ import com.deviceinfo.Manager;
 import org.json.JSONObject;
 
 import java.net.NetworkInterface;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ExtrasInfo {
 
@@ -51,6 +54,16 @@ public class ExtrasInfo {
             info.put("Telephony.DeviceId", deviceId);
         } catch (SecurityException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 5. 宿主App的信息，记录一下
+        try {
+            String packageName = mContext.getPackageName();
+            String grabDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
+            info.put("Captor.PackageName", packageName);
+            info.put("Captor.Date", grabDate);
         } catch (Exception e) {
             e.printStackTrace();
         }

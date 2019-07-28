@@ -36,7 +36,7 @@ public class WindowManagerInfo {
                 final String fMethodName = methodName;
                 final Map<String, Object> fResultMap = resultMap;
 
-                // TODO ... Hook 那边处理一下这个 outPoint 的值给 APP
+                // 因为返回值是void， 在这里提前处理了
                 // public void getInitialDisplaySize(int displayId, android.graphics.Point size) throws android.os.RemoteException;
                 // public void getBaseDisplaySize(int displayId, android.graphics.Point size) throws android.os.RemoteException;
                 if (returnType == void.class && parameterTypes.length == 2) {

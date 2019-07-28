@@ -102,6 +102,11 @@ public class TelephonyManagerInfo {
                 // public java.lang.String[] getMergedSubscriberIds(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public boolean isVideoCallingEnabled(java.lang.String callingPackage) throws android.os.RemoteException;
                 // public java.lang.String getDeviceId(java.lang.String callingPackage) throws android.os.RemoteException;	// important!!!
+
+                // public java.util.List<android.telephony.CellInfo> getAllCellInfo(java.lang.String callingPkg) throws android.os.RemoteException;
+                // public java.util.List<android.telephony.NeighboringCellInfo> getNeighboringCellInfo(java.lang.String callingPkg) throws android.os.RemoteException;
+                // public android.os.Bundle getCellLocation(java.lang.String callingPkg) throws android.os.RemoteException;
+
                 if (parameterTypes.length == 1 && parameterTypes[0] == String.class
                         && (methodName.equals("getDeviceId") || methodName.equals("getDataNetworkType")
                         || methodName.equals("isOffhook") || methodName.equals("isRinging")
@@ -109,7 +114,11 @@ public class TelephonyManagerInfo {
                         || methodName.equals("isSimPinEnabled") || methodName.equals("getCdmaEriIconIndex")
                         || methodName.equals("getCdmaEriIconMode") || methodName.equals("getCdmaEriText")
                         || methodName.equals("getLteOnCdmaMode") || methodName.equals("getCalculatedPreferredNetworkType")
-                        || methodName.equals("getMergedSubscriberIds") || methodName.equals("isVideoCallingEnabled"))) {
+                        || methodName.equals("getMergedSubscriberIds") || methodName.equals("isVideoCallingEnabled"))
+                        || methodName.equals("getAllCellInfo") || methodName.equals("getNeighboringCellInfo")
+                        || methodName.equals("getCellLocation")
+                ) {
+
                     Object value = method.invoke(obj, new Object[]{opPackageName});
                     return value;
                 }
@@ -135,7 +144,7 @@ public class TelephonyManagerInfo {
 
                     // public java.lang.String getEsn(int subId) throws android.os.RemoteException;     // Android 8.1
                     // public java.lang.String getCdmaPrlVersion(int subId) throws android.os.RemoteException;  // Android 8.1
-                    // public android.telephony.SignalStrength getSignalStrength(int subId) throws android.os.RemoteException;
+                    // public android.telephony.SignalStrength getSignalStrength(int subId) throws android.os.RemoteException; // Android 8.1
 
                     if (methodName.equals("getCallStateForSubscriber") || methodName.equals("getActivePhoneTypeForSubscriber")
                             || methodName.equals("getVoiceMessageCountForSubscriber") || methodName.equals("getIccOperatorNumericForData")

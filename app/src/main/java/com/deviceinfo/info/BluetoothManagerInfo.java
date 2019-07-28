@@ -19,7 +19,8 @@ public class BluetoothManagerInfo {
 
         JSONObject info = getIBluetoothManagerInfo(mContext);
 
-        if (info.length() == 0) {
+        // 拿不到??? 再尝试拿一遍看看
+        if (!info.has("getName") || !info.has("getAddress")) {
             BluetoothAdapter bluetoothAdapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter();
             try {
                 if (bluetoothAdapter.getName() != null) {
