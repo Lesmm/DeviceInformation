@@ -162,7 +162,9 @@ public class SystemPropertiesInfo {
     public static JSONObject getTheValueWeMustToNeed(JSONObject info) {
         JSONObject must2HaveInfo = new JSONObject();
 
-        String[] arrayKeys = new String[]{"gsm.version.baseband", "gsm.version.ril-impl", "net.bt.name", "net.dns1", "persist.sys.timezone",
+        String[] arrayKeys = new String[]{
+                "persist.sys.timezone", // IMPORTANT!!!!
+                "gsm.version.baseband", "gsm.version.ril-impl", "net.bt.name", "net.dns1", "persist.sys.timezone",
                 "ro.bootimage.build.date", "ro.bootimage.build.date.utc", "ro.bootimage.build.fingerprint", "ro.build.date", "ro.build.date.utc",
                 "ro.build.description", "ro.build.display.id", "ro.build.expect.baseband", "ro.build.fingerprint", "ro.build.flavor", "ro.build.host", "ro.build.id",
                 "ro.build.product", "ro.build.version.codename", "ro.build.version.incremental", "ro.build.version.release", "ro.build.version.sdk", "ro.expect.recovery_id",

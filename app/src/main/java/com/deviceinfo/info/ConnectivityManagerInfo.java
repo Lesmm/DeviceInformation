@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.util.Log;
 
 import com.deviceinfo.InvokerOfObject;
@@ -77,15 +78,9 @@ public class ConnectivityManagerInfo {
                 public boolean updateLockdownVpn() throws android.os.RemoteException;
                 */
 
-
-                // TODO ... Hook 那边这三个获取 NetworkInfo & Network 信息的根据 getAllNetworkInfo() & getAllNetworks() 的值来返回!!!
-                // public android.net.NetworkInfo getNetworkInfo(int networkType) throws android.os.RemoteException;
-                // public android.net.NetworkInfo getNetworkInfoForNetwork(android.net.Network network) throws android.os.RemoteException;
-                // public android.net.Network getNetworkForType(int networkType) throws android.os.RemoteException;
-                // TODO ... Hook 那边，上面三个根据下面这两个来返回!!!
+                // public android.net.LinkProperties getActiveLinkProperties() throws android.os.RemoteException;
                 // public android.net.NetworkInfo[] getAllNetworkInfo() throws android.os.RemoteException;
                 // public android.net.Network[] getAllNetworks() throws android.os.RemoteException;
-
 
                 if (parameterTypes.length == 0) {
                     if (methodName.equals("getGlobalProxy")) {
@@ -96,21 +91,22 @@ public class ConnectivityManagerInfo {
                 }
 
 
-                // public android.net.LinkProperties getActiveLinkProperties() throws android.os.RemoteException;
-                // public int getRestoreDefaultNetworkDelay(int networkType) throws android.os.RemoteException;
-                // public android.net.LinkProperties getLinkPropertiesForType(int networkType) throws android.os.RemoteException;
-                // public android.net.LinkProperties getLinkProperties(android.net.Network network) throws android.os.RemoteException;
-                // public android.net.NetworkCapabilities getNetworkCapabilities(android.net.Network network) throws android.os.RemoteException;
-
-                // public android.net.NetworkCapabilities[] getDefaultNetworkCapabilitiesForUser(int userId) throws android.os.RemoteException;
-                // TODO ... 这个Json Hook了会不会APP有问题，看情况把这个Json Key去掉即不Hook，现在先取这些信息回来先(发现所有支持的NetworkInfo都是true)
-                // public boolean isNetworkSupported(int networkType) throws android.os.RemoteException;
-
                 if (parameterTypes.length == 1) {
+
+                    // public int getRestoreDefaultNetworkDelay(int networkType) throws android.os.RemoteException;
+                    // public android.net.LinkProperties getLinkPropertiesForType(int networkType) throws android.os.RemoteException;
+
+                    // TODO ... 这个Json Hook了会不会APP有问题，看情况把这个Json Key去掉即不Hook，现在先取这些信息回来先(发现所有支持的NetworkInfo都是true)
+                    // public boolean isNetworkSupported(int networkType) throws android.os.RemoteException;
+
+                    // TODO ... 这两个方法看能不能从 getAllNetworkInfo() & getAllNetworks() 里简化即: NetworkInfo & Network 信息的根据 getAllNetworkInfo() & getAllNetworks() 的值来返回!
+                    // public android.net.NetworkInfo getNetworkInfo(int networkType) throws android.os.RemoteException;
+                    // public android.net.Network getNetworkForType(int networkType) throws android.os.RemoteException;
 
                     if (parameterTypes[0] == int.class) {
 
-                        if (methodName.equals("getLinkPropertiesForType") || methodName.equals("isNetworkSupported") || methodName.equals("getRestoreDefaultNetworkDelay")) {
+                        if (methodName.equals("getLinkPropertiesForType") || methodName.equals("getRestoreDefaultNetworkDelay") || methodName.equals("isNetworkSupported")
+                                || methodName.equals("getNetworkInfo") || methodName.equals("getNetworkForType")) {
                             iterateAllNetworkInfoList(mContext, new IterateNetworkInfoHandler() {
                                 @Override
                                 public void handle(NetworkInfo info) throws Exception {
@@ -133,6 +129,8 @@ public class ConnectivityManagerInfo {
                             });
                         }
 
+                        // public android.net.NetworkCapabilities[] getDefaultNetworkCapabilitiesForUser(int userId) throws android.os.RemoteException;
+
                         if (methodName.equals("getDefaultNetworkCapabilitiesForUser")) {
                             Object value = method.invoke(obj, new Object[]{userId});
                             return value;
@@ -140,14 +138,19 @@ public class ConnectivityManagerInfo {
 
                     }
 
-                    // API LEVEL 21 才有 android.net.Network 类，Android 4.4 没有
-                    if ( parameterTypes[0].getName().equals("android.net.Network") ) {
-                    // if ( parameterTypes[0] == android.net.Network.class ) {
 
-                        if (methodName.equals("getLinkProperties") || methodName.equals("getNetworkCapabilities")) {
+                    // public android.net.LinkProperties getLinkProperties(android.net.Network network) throws android.os.RemoteException;
+                    // public android.net.NetworkCapabilities getNetworkCapabilities(android.net.Network network) throws android.os.RemoteException;
+                    // public android.net.NetworkInfo getNetworkInfoForNetwork(android.net.Network network) throws android.os.RemoteException;
+
+                    // API LEVEL 21 才有 android.net.Network 类，Android 4.4 没有
+                    if (parameterTypes[0].getName().equals("android.net.Network")) {
+                        // if ( parameterTypes[0] == android.net.Network.class ) {
+
+                        if (methodName.equals("getLinkProperties") || methodName.equals("getNetworkCapabilities") || methodName.equals("getNetworkInfoForNetwork")) {
                             iterateAllNetworkList(mContext, new IterateNetworkHandler() {
                                 @Override
-                                public void handle(Network info) throws Exception {
+                                public void handle(Network network) throws Exception {
 
                                     String methodKey = fMethodName + "_with_args";
                                     Map methodArgsMap = (Map) fResultMap.get(methodKey);
@@ -156,9 +159,9 @@ public class ConnectivityManagerInfo {
                                         fResultMap.put(methodKey, methodArgsMap);
                                     }
 
-                                    int netId = (Integer) IReflectUtil.getFieldValue(info, "netId");
+                                    int netId = (Integer) IReflectUtil.getFieldValue(network, "netId");
                                     String key = "_arg0_Network_" + netId;
-                                    Object value = fMethod.invoke(fObj, new Object[]{info});
+                                    Object value = fMethod.invoke(fObj, new Object[]{network});
                                     if (value != null) {
                                         methodArgsMap.put(key, value);
                                     }
@@ -178,16 +181,18 @@ public class ConnectivityManagerInfo {
         return new JSONObjectExtended(result);
     }
 
-    // ---------------------- 遍历 Network (netId 标识) & NetworkInfo (mNetworkType 标识) 工具方法 ----------------------
+    // ---------------------- 遍历 Network (netId 标识) 工具方法 ----------------------
     public static interface IterateNetworkHandler {
-        public void handle(Network info) throws Exception;
+        public void handle(Network network) throws Exception;
     }
 
     // API LEVEL 21 才有 android.net.Network 类，Android 4.4 没有
-    private static Object[] allNetworkList = null;
-    // private static Network[] allNetworkList = null;  // 为了 运行时 不致于一加载类就Crash, 注释掉。
+    private static Object[] allNetworkList = null;// private static Network[] allNetworkList = null;  // 这会导致 运行时 一加载类就Crash, 注释掉。
 
     public static void iterateAllNetworkList(Context mContext, IterateNetworkHandler handler) {
+        if (Build.VERSION.SDK_INT < 21) {
+            return;
+        }
         if (allNetworkList == null) {
             ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
             allNetworkList = connectivityManager.getAllNetworks();
@@ -195,7 +200,7 @@ public class ConnectivityManagerInfo {
 
         for (int i = 0; allNetworkList != null && i < allNetworkList.length; i++) {
             try {
-                Network network = (Network)allNetworkList[i];
+                Network network = (Network) allNetworkList[i];
                 handler.handle(network);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -203,6 +208,7 @@ public class ConnectivityManagerInfo {
         }
     }
 
+    // ---------------------- 遍历 NetworkInfo (mNetworkType 标识) 工具方法 ----------------------
     public static interface IterateNetworkInfoHandler {
         public void handle(NetworkInfo info) throws Exception;
     }

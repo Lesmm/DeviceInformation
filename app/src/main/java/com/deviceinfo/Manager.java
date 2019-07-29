@@ -38,7 +38,7 @@ import common.modules.util.IReflectUtil;
 
 public class Manager {
 
-    public static Boolean IS_DEBUG = false;
+    public static Boolean IS_DEBUG = true;
 
     public static final String __key_is_dev_info_got__ = "__key_is_dev_info_got__";
 
