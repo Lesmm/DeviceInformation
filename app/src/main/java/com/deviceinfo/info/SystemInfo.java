@@ -40,20 +40,19 @@ public class SystemInfo {
             systemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "props");
         }
 
-        // 像一加的系统，完全不给拿回来，又没有源码
-        if (systemProperties == null) {
-            systemProperties = p;
-        }
-
         Properties unchangeableSystemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "unchangeableSystemProperties");
         if (unchangeableSystemProperties == null) {
             unchangeableSystemProperties = (Properties) IReflectUtil.getFieldValue(java.lang.System.class, "unchangeableProps");
         }
 
-        // OK 取信息出来
+        // OK 把取信息出来
 
         JSONObject propsInfo = new JSONObject();
 
+        // 像一加的系统，完全不给拿回来，又没有源码
+        if (systemProperties == null) {
+            systemProperties = p;
+        }
         if (systemProperties != null) {
             Enumeration enu = systemProperties.propertyNames();
             while (enu.hasMoreElements()) {

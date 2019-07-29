@@ -1,6 +1,5 @@
 package common.modules.util;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,7 @@ public class IArrayUtil {
         return list;
     }
 
-    public static Object[] listToArray(ArrayList list) {
+    public static Object[] listToArray(List list) {
         Object[] array = new Object[list.size()];
         for (int i = 0; i < list.size(); i++) {
             Object k = list.get(i);
