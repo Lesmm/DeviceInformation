@@ -265,7 +265,7 @@ public class SubscriptionManagerInfo {
                                 fResultMap.put(methodKey, methodArgsMap);
                             }
 
-                            // TODO ... 测试插了 171 的卡取出后的 value 为 null
+                            // 测试了, 当取出 171 的卡后的 value 为 null
                             String mIccId = (String) IReflectUtil.getFieldValue(info, "mIccId");
                             String key = "_arg0_String_" + mIccId;
                             Object value = fMethod.invoke(fObj, new Object[]{mIccId, opPackageName});
