@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.deviceinfo.Manager;
-import com.google.deviceinfo.ApplicationImpl;
 
 public class IPreferenceUtil {
 

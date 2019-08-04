@@ -15,6 +15,7 @@ import com.deviceinfo.info.ConnectivityManagerInfo;
 import com.deviceinfo.info.DisplayManagerInfo;
 import com.deviceinfo.info.ExtrasInfo;
 import com.deviceinfo.info.HardwareInfo;
+import com.deviceinfo.info.LocationManagerInfo;
 import com.deviceinfo.info.MediaInfo;
 import com.deviceinfo.info.PackageManagerInfo;
 import com.deviceinfo.info.SensorsInfo;
@@ -89,12 +90,15 @@ public class Manager {
             JSONObject bluetoothInfo = BluetoothManagerInfo.getInfo(mContext);
             result.put("Bluetooth", bluetoothInfo);
 
+            JSONObject locationInfo = LocationManagerInfo.getInfo(mContext);
+            result.put("Location", locationInfo);
+
             JSONObject buildInfo = BuildInfo.getBuildInfo(mContext);
             JSONObject buildVersionInfo = BuildInfo.getBuildVersionInfo(mContext);
             result.put("Build", buildInfo);
             result.put("Build.VERSION", buildVersionInfo);
 
-            JSONObject subscriptionInfo = SubscriptionManagerInfo.getInfo(mContext);    // 得放在 TelephonyManagerInfo 前，因为 TelephonyManagerInfo 会调iterate*方法，不提前会crash
+            JSONObject subscriptionInfo = SubscriptionManagerInfo.getInfo(mContext);    // 得放在 TelephonyManagerInfo 前，因为 TelephonyManagerInfo 会调它的iterate*方法，不提前会crash
             result.put("Subscription", subscriptionInfo);
 
             JSONObject telephonyInfo = TelephonyManagerInfo.getInfo(mContext);

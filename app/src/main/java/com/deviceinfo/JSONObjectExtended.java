@@ -5,6 +5,9 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.BaseBundle;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -97,7 +100,7 @@ public class JSONObjectExtended extends JSONObject {
         for (int i = 0; i < elements.length; i++) {
             StackTraceElement ele = elements[i];
             String traceDescription = ele.toString();
-            if (traceDescription.contains("JSONObjectExtended.objectToJson")){
+            if (traceDescription.contains("JSONObjectExtended.objectToJson")) {
                 recursiveDepth++;
             }
         }
@@ -109,13 +112,24 @@ public class JSONObjectExtended extends JSONObject {
     }
 
     private static Map<?, ?> objectFieldNameValues(int superClassDepth, Object obj) {
-        Boolean isClass = obj instanceof Class;
-        Class<?> clazz = isClass ? (Class<?>) obj : obj.getClass();
+        Class<?> clazz = obj instanceof Class ? (Class<?>) obj : obj.getClass();
 
-        if ( clazz == Bitmap.class || clazz == Color.class ||
-                clazz == BitmapDrawable.class || clazz == ColorDrawable.class || clazz == Drawable.class) {
+        // 处理Bundle, 如 Telephony 的 getCellLocation 方法
+        if (clazz == Bundle.class /*|| BaseBundle.class.isAssignableFrom(clazz)*/) {
+            IReflectUtil.invokeMethod(obj, "unparcel", new Class[]{}, new Object[]{});
+            Map<?, ?> mMap = (Map<?, ?>) IReflectUtil.getFieldValue(obj, "mMap");  // ArrayMap<String, Object>
+            return mMap;
+        }
+
+        //  处理一些JSON无法表达的类
+        if (
+                clazz == Bitmap.class || clazz == Color.class ||
+                clazz == BitmapDrawable.class ||
+                clazz == ColorDrawable.class || clazz == Drawable.class
+        ) {
             return null;
         }
+
         String clazzName = clazz.getName();
         if (clazzName.equals("android.graphics.drawable.Icon")) {       // API < 23 没有 Icon.class 类
             return null;
@@ -136,7 +150,7 @@ public class JSONObjectExtended extends JSONObject {
                     boolean isFinal = Modifier.isFinal(field.getModifiers());
 
                     // Class<?> type = field.getType();
-                    if ( isStatic && isFinal ) {
+                    if (isStatic && isFinal) {
                         // TODO ... if fieldName characters are all uppercase ???
                         // TODO ... but Build.class also has static final ..., So Build.class not permitted use JSONObjectExtended
                         continue;

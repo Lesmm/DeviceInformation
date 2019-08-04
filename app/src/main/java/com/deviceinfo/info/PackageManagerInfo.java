@@ -72,7 +72,6 @@ public class PackageManagerInfo {
 
         Object proxy = InvokerOfService.getProxy("android.content.pm.IPackageManager", "package");
         final int userId = (Integer) IReflectUtil.invokeMethod(mContext, "getUserId", new Class[]{}, new Object[]{});
-        final Object opPackageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(proxy, new InvokerOfObject.InvokeHandler() {
             @Override
@@ -206,8 +205,8 @@ public class PackageManagerInfo {
                     }
                 }
 
-                // !!! Package List 有两个来源，分别是 getPackageInfo & getInstalledPackages， 一个是json一个是array, 其实前者的values就是后者的array element! 值是一样，分开写是因为定制化更高
-                // !!! 同理放在 getApplicationInfo 与 getInstalledApplications 也一样。 另 PackageInfo 包含了 ApplicationInfo。
+                // TODO ... NOTE: Packages list 有两个来源，分别是 getPackageInfo & getInstalledPackages， 前者json后者array, 前者的value就是后者的array element，分开获取是因为定制化更高
+                // 同理放在 getApplicationInfo 与 getInstalledApplications 也一样。 另 PackageInfo 包含了 ApplicationInfo。
 
 
                 if (parameterTypes.length == 2) {
@@ -215,7 +214,7 @@ public class PackageManagerInfo {
                     // public boolean isPackageAvailable(java.lang.String packageName, int userId) throws android.os.RemoteException;
                     if (parameterTypes[0] == String.class && parameterTypes[1] == int.class) {
 
-                        // TODO... isPackageAvailable 这方法就由 Hook 那边根据 Package List 来处理true, 其余的如系统package交给系统吧,这里只是拿一下看看
+                        // TODO... isPackageAvailable 这方法就由 Hook 那边根据 Packages list 来处理true, 其余的如系统package交给系统吧, 这里只是拿一下看看
                         // TODO... 但如 com.cyanogenmod 及 org.cyanogenmod 得返回 false，要不会被认为是 CM 手机
                         if (methodName.equals("isPackageAvailable")) {
                             final Map availableMap = new HashMap();
