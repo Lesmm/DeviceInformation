@@ -2,14 +2,20 @@ package com.google.deviceinfo;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.deviceinfo.Manager;
 
+import org.json.JSONObject;
+
+import common.modules.util.IFileUtil;
 import common.modules.util.IHandlerUtil;
 
 public class MainActivity extends Activity {
@@ -27,9 +33,9 @@ public class MainActivity extends Activity {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable e) {
-                Log.d("DeviceInfo","-------------- uncaughtException --------------");
+                Log.d("DeviceInfo", "-------------- uncaughtException --------------");
                 e.printStackTrace();
-                Log.d("DeviceInfo","-------------- uncaughtException --------------");
+                Log.d("DeviceInfo", "-------------- uncaughtException --------------");
             }
         });
 
@@ -70,16 +76,16 @@ public class MainActivity extends Activity {
         }
 
         // Views
+
         TextView buildModelTextView = findViewById(R.id.buildModelTextView);
         buildModelTextView.setText(Build.MANUFACTURER + " - " + Build.MODEL);
         buildModelTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 // ------------------------------------------------>>>
-                final TextView textView = (TextView)v;
+                final TextView textView = (TextView) v;
                 final int KEY_IS_GETTING = R.id.buildModelTextView;
-                Boolean isGetting = (Boolean)textView.getTag(KEY_IS_GETTING);
+                Boolean isGetting = (Boolean) textView.getTag(KEY_IS_GETTING);
                 if (isGetting != null && isGetting.booleanValue()) {
                     return;
                 } else {
@@ -97,10 +103,10 @@ public class MainActivity extends Activity {
                             @Override
                             public void run() {
                                 long diff = new java.util.Date().getTime() - startTime;
-                                int seconds = (int)(diff / 1000);
+                                int seconds = (int) (diff / 1000);
                                 textView.setText("获取中... " + seconds + "s");
 
-                                if ((Boolean)textView.getTag(KEY_IS_GETTING)) {
+                                if ((Boolean) textView.getTag(KEY_IS_GETTING)) {
                                     IHandlerUtil.postToMainThread(this);
                                 } else {
                                     textView.setText(Build.MANUFACTURER + " - " + Build.MODEL);
@@ -110,7 +116,10 @@ public class MainActivity extends Activity {
                         // ------------------------------------------------<<<
 
 
-                        Manager.grabInfoSync();
+                        // Manager.grabInfoSync();
+
+                        JSONObject jsonObject = Manager.getInfo(MainActivity.this);
+                        IFileUtil.writeTextToFile(jsonObject.toString(), "/sdcard/phoneInfo.json");
 
 
                         // ------------------------------------------------>>>
@@ -121,16 +130,26 @@ public class MainActivity extends Activity {
                             }
                         });
                         // ------------------------------------------------<<<
-
                     }
                 }).start();
             }
         });
 
+        TextView deviceIdTextView = findViewById(R.id.deviceIdTextView);
+        TextView subscriberIdTextView = findViewById(R.id.subscriberIdTextView);
+        try {
+            String imei = ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+            String imsi = ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).getSubscriberId();
+            deviceIdTextView.setText("IMEI: " + imei);
+            subscriberIdTextView.setText("IMSI: " + imsi);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 开始
         Manager.checkContextLoadedApkResources(this);
-
-        // Manager.getInfo(this);
     }
 
 }

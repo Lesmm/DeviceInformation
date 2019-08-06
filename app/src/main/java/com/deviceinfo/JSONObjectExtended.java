@@ -13,6 +13,7 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -124,8 +125,8 @@ public class JSONObjectExtended extends JSONObject {
         //  处理一些JSON无法表达的类
         if (
                 clazz == Bitmap.class || clazz == Color.class ||
-                clazz == BitmapDrawable.class ||
-                clazz == ColorDrawable.class || clazz == Drawable.class
+                        clazz == BitmapDrawable.class ||
+                        clazz == ColorDrawable.class || clazz == Drawable.class
         ) {
             return null;
         }
@@ -142,6 +143,7 @@ public class JSONObjectExtended extends JSONObject {
             Field[] fields = clazz.getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
                 try {
+
                     Field field = fields[i];
                     field.setAccessible(true);
                     String fieldName = field.getName();
@@ -161,9 +163,21 @@ public class JSONObjectExtended extends JSONObject {
                     }
 
                     Object fieldValue = field.get(isStatic ? clazz : obj);
+
+                    // for WifiSsid in getConnectionInfo() and getScanResults() .... 其实这里不用把 ByteArrayOutputStream 转成 String 也行，Hook 那边已经支持了count&buf的解析重构
+                    if (fieldValue != null && fieldValue.getClass() == ByteArrayOutputStream.class) {
+                        ByteArrayOutputStream byteArray = (ByteArrayOutputStream) fieldValue;
+                        if (byteArray.size() <= 512) {
+                            fieldValue = byteArray.toString();
+                        } else {
+                            fieldValue = null;
+                        }
+                    }
+
                     if (fieldValue != null) {
                         result.put(fieldName, fieldValue);
                     }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

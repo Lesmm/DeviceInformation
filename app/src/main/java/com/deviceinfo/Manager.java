@@ -43,7 +43,7 @@ public class Manager {
 
     public static final String __key_is_dev_info_got__ = "__key_is_dev_info_got__";
 
-    public static void grabInfoASync() {
+    public static void grabInfoAsync() {
         new Thread(new Runnable() {
             @Override
             public void run() {

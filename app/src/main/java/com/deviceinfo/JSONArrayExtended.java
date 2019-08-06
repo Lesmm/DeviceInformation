@@ -1,7 +1,5 @@
 package com.deviceinfo;
 
-import com.deviceinfo.JSONObjectExtended;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
