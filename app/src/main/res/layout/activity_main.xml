@@ -5,14 +5,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
     <TextView
         android:id="@+id/buildModelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_centerInParent="true"
-        android:background="@color/gray_cc"
+        android:textColor="@color/black"
         android:text="Build.Model" />
 
     <TextView
@@ -24,7 +23,7 @@
 
         android:layout_marginTop="18dp"
         android:layout_below="@+id/buildModelTextView"
-
+        android:textColor="@color/black"
         android:text="DeviceId" />
 
     <TextView
@@ -36,8 +35,15 @@
 
         android:layout_marginTop="18dp"
         android:layout_below="@+id/deviceIdTextView"
-
+        android:textColor="@color/black"
         android:text="SubscriberId" />
+
+    <com.google.deviceinfo.MainActivityLoadingView
+        android:id="@+id/loadingView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        />
 
 
 </RelativeLayout>

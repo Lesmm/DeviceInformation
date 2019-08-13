@@ -23,10 +23,10 @@ public class SystemPropertiesInfo {
 
     public static JSONObject getInfo(final Context mContext) {
 
-        JSONObject telephonyPropertiesInfo = getTelephonyPropertiesInfo();
         JSONObject buildPropertiesInfo = getBuildPropertiesInfo();
         JSONObject defaultPropertiesInfo = getDefaultPropertiesInfo();
         JSONObject commandGetpropPropertiesInfo = getCommandGetpropPropertiesInfo();
+        JSONObject telephonyPropertiesInfo = getTelephonyPropertiesInfo();
 
         if (Manager.IS_DEBUG) {
             // Diff对比了一下上面这几个JSON，commandGetpropPropertiesInfo 与 buildPropertiesInfo 确实大部分互有包含。但也有各自都没有的Key-Value
@@ -45,14 +45,14 @@ public class SystemPropertiesInfo {
         // TODO ... Hook 那边把 所有 Keys-Values 转成 Properties 文件格式写到 /system/build.prop 去, 因为它比较大，所以不弄到 Files.Contents 了
         // TODO ... Hook 那边, 至于 /default.prop ，我们同样带上一份到 Files.Contents 里去，因为它比较小, 但有些系统的APP是没有读 /default.prop 权限的
         JSONObject info = new JSONObject();
-        InfoJsonHelper.mergeJSONObject(info, telephonyPropertiesInfo);
         InfoJsonHelper.mergeJSONObject(info, buildPropertiesInfo);
         InfoJsonHelper.mergeJSONObject(info, defaultPropertiesInfo);
+        InfoJsonHelper.mergeJSONObject(info, commandGetpropPropertiesInfo);
+        InfoJsonHelper.mergeJSONObject(info, telephonyPropertiesInfo);
 
         JSONObject weMustToNeedInfo = getTheValueWeMustToNeed(info);
         InfoJsonHelper.mergeJSONObject(info, weMustToNeedInfo);
 
-        InfoJsonHelper.mergeJSONObject(info, commandGetpropPropertiesInfo);
 
         return info;
     }

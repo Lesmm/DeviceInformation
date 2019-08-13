@@ -1,14 +1,18 @@
 package com.deviceinfo.info;
 
+import android.app.Application;
 import android.content.Context;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
+import com.deviceinfo.InfoJsonHelper;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import common.modules.util.IJSONObjectUtil;
 import common.modules.util.IReflectUtil;
 
 // TODO ... Hook 那边 hook 的话把 LoadedApk 的 mResources field 改成我们的 继承Reources的类 的实例，重写get方法
@@ -28,8 +32,19 @@ public class AndroidInternalResourcesInfo {
             String mmsUAProfUrl = telephonyManager.getMmsUAProfUrl();
             int config_mms_user_agent_profile_url = (Integer) IReflectUtil.getFieldValue(Class.forName("com.android.internal.R$string"), "config_mms_user_agent_profile_url");
             String mmsUAProfUrlInResource = mContext.getResources().getString(config_mms_user_agent_profile_url);
-
             Log.d("DeviceInfo", "_set_debug_here_");
+
+
+            Class AppGlobals = mContext.getClass().getClassLoader().loadClass("android.app.AppGlobals");
+            // Application initialApp = AppGlobals.getInitialApplication();
+            Application initialApp = (Application)IReflectUtil.invokeMethod(AppGlobals, "getInitialApplication", new Class[]{}, new Object[]{});
+            int config_alternateWebViewPackageName = (Integer) IReflectUtil.getFieldValue( Class.forName("com.android.internal.R$string"), "config_alternateWebViewPackageName" );
+            int config_webViewPackageName = (Integer) IReflectUtil.getFieldValue( Class.forName("com.android.internal.R$string"), "config_webViewPackageName" );
+            String pkg = initialApp.getString(config_alternateWebViewPackageName);
+            String pkgDef = initialApp.getString(config_webViewPackageName);
+            // String pkg = initialApp.getString(com.android.internal.R.string.config_alternateWebViewPackageName);
+            Log.d("DeviceInfo", "_set_debug_here_");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -45,11 +60,16 @@ public class AndroidInternalResourcesInfo {
 
         Log.d("DeviceInfo", "_set_debug_here_");
 
-        // 过滤出我们需要的, just one now ...
+        // 过滤出我们需要的
         try {
 
-            // string
+            // config_mms_user_agent, config_alternateWebViewPackageName, config_webViewPackageName, etc...
+
+            JSONObject configJson = IJSONObjectUtil.getJSONWithPrefix(stringResultsJson,"config_");
+            InfoJsonHelper.mergeJSONObject(info, configJson);
+
             info.put("config_mms_user_agent", stringResultsJson.optString("config_mms_user_agent"));
+            info.put("web_user_agent", stringResultsJson.optString("web_user_agent"));
 
         } catch (Exception e) {
             e.printStackTrace();

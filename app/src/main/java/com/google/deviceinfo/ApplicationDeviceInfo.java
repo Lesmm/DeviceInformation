@@ -6,11 +6,9 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
-import java.lang.reflect.Method;
+public class ApplicationDeviceInfo extends Application {
 
-public class ApplicationImpl extends Application {
-
-    private static ApplicationImpl instance;
+    private static ApplicationDeviceInfo instance;
     private static Context appContext;
     private static Activity resumedActivity;
 
@@ -66,7 +64,7 @@ public class ApplicationImpl extends Application {
         });
     }
 
-    public static synchronized ApplicationImpl getInstance() {
+    public static synchronized ApplicationDeviceInfo getInstance() {
         return instance;
     }
 

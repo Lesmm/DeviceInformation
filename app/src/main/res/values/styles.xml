@@ -1,11 +1,12 @@
 <resources>
 
-    <!-- Base application theme. -->
     <style name="AppTheme" parent="">
-        <!-- Customize your theme here. -->
+        <item name="android:windowNoTitle">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@color/white</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="" />

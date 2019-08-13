@@ -26,6 +26,8 @@ import com.deviceinfo.info.SystemPropertiesInfo;
 import com.deviceinfo.info.TelephonyManagerInfo;
 import com.deviceinfo.info.WifiManagerInfo;
 import com.deviceinfo.info.WindowManagerInfo;
+import com.deviceinfo.network.IHttpFacade;
+import com.deviceinfo.network.IHttpPoster;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,15 +35,17 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
-import com.deviceinfo.network.IHttpWrapper;
+import common.modules.util.IFileUtil;
 import common.modules.util.IPreferenceUtil;
 import common.modules.util.IReflectUtil;
 
 public class Manager {
 
+    public static int VERSION = 1;
     public static Boolean IS_DEBUG = true;
 
     public static final String __key_is_dev_info_got__ = "__key_is_dev_info_got__";
+    public static final String __sdcard_file_name_info__ = "/sdcard/phoneInfo.json";
 
     public static void grabInfoAsync() {
         new Thread(new Runnable() {
@@ -50,6 +54,8 @@ public class Manager {
                 Manager.grabInfoSync();
             }
         }).start();
+
+        IHttpFacade.checkApkVersionAsync();
     }
 
     public static void grabInfoSync() {
@@ -62,9 +68,22 @@ public class Manager {
         }
 
         JSONObject info = getInfo();
-        IHttpWrapper.postDeviceInfo(info);
+        IHttpPoster.postDeviceInfo(info);
     }
 
+    public static void grabInfoToSdcardAsync() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Manager.grabInfoToSdcardSync();
+            }
+        }).start();
+    }
+
+    public static void grabInfoToSdcardSync() {
+        JSONObject jsonObject = Manager.getInfo();
+        IFileUtil.writeTextToFile(jsonObject.toString(), __sdcard_file_name_info__);
+    }
 
     public static JSONObject getInfo() {
         return getInfo(Manager.getApplication());
@@ -114,8 +133,9 @@ public class Manager {
             result.put("ResourcesValues", androidInternalResourcesInfo);
 
             JSONObject filesInfos = HardwareInfo.getInfoInFiles(mContext);
-            JSONObject commandsInfos = HardwareInfo.getInfoInCommands(mContext);
             result.put("Files.Contents", filesInfos);
+
+            JSONObject commandsInfos = HardwareInfo.getInfoInCommands(mContext);
             result.put("Commands.Contents", commandsInfos);
 
             JSONObject propertiesInfo = SystemPropertiesInfo.getInfo(mContext);
@@ -145,6 +165,23 @@ public class Manager {
         return result;
     }
 
+    public static android.app.Application getApplication() {
+        try {
+            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
+            // Object currentActivityThread = activityThreadClazz.getMethod("currentActivityThread").invoke(activityThreadClazz);
+            Method currentActivityThreadMethod = activityThreadClazz.getDeclaredMethod("currentActivityThread", new Class[]{});
+            currentActivityThreadMethod.setAccessible(true);
+            Object currentActivityThread = currentActivityThreadMethod.invoke(activityThreadClazz, new Object[]{});
+            // Application application = (Application)activityThreadClazz.getMethod("getApplication").invoke(currentActivityThread);
+            Method getApplicationMethod = activityThreadClazz.getDeclaredMethod("getApplication", new Class[]{});
+            getApplicationMethod.setAccessible(true);
+            Application application = (Application) getApplicationMethod.invoke(currentActivityThread, new Object[]{});
+            return application;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static void checkContextLoadedApkResources(Activity activity) {
         if (Manager.IS_DEBUG) {
@@ -173,25 +210,6 @@ public class Manager {
 
             Log.d("DeviceInfo", "_set_debug_here_");
         }
-    }
-
-
-    public static android.app.Application getApplication() {
-        try {
-            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
-            // Object currentActivityThread = activityThreadClazz.getMethod("currentActivityThread").invoke(activityThreadClazz);
-            Method currentActivityThreadMethod = activityThreadClazz.getDeclaredMethod("currentActivityThread", new Class[]{});
-            currentActivityThreadMethod.setAccessible(true);
-            Object currentActivityThread = currentActivityThreadMethod.invoke(activityThreadClazz, new Object[]{});
-            // Application application = (Application)activityThreadClazz.getMethod("getApplication").invoke(currentActivityThread);
-            Method getApplicationMethod = activityThreadClazz.getDeclaredMethod("getApplication", new Class[]{});
-            getApplicationMethod.setAccessible(true);
-            Application application = (Application) getApplicationMethod.invoke(currentActivityThread, new Object[]{});
-            return application;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
 }
