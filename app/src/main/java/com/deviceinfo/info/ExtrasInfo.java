@@ -12,12 +12,15 @@ import com.deviceinfo.Manager;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class ExtrasInfo {
 
@@ -68,6 +71,22 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
+        // 6. 可用核数
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        int coreCount = new File("/sys/devices/system/cpu/").listFiles(new FileFilter(){
+            public final boolean accept(File file) {
+                if (Pattern.matches("cpu[0-9]", file.getName())) {
+                    return true;
+                }
+                return false;
+            }
+        }).length;
+        try {
+            info.put("Core.count", coreCount);
+            info.put("Core.available", availableProcessors);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return info;
     }
 

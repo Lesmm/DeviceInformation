@@ -14,7 +14,13 @@ import com.deviceinfo.Manager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 
 import common.modules.util.IFileUtil;
 import common.modules.util.IProcessUtil;
@@ -53,7 +59,7 @@ public class HardwareInfo {
         try {
 
             // --------------- cpu, meminfo ... ---------------
-            String key = "/proc/cpuinfo";
+            String key = "/proc/cpuinfo";                   // 这个输出比较特别，用 cat 与 BufferedReader 读出的同容不一样。 cmake or ndk 加上 NEON 支持。
             String info = IFileUtil.readFileToText(key);
             filesInfos.put(key, info);
 
@@ -76,6 +82,29 @@ public class HardwareInfo {
             key = "/proc/tty/drivers";
             info = IFileUtil.readFileToText(key);
             filesInfos.put(key, info);
+
+            key = "/sys/fs/selinux/enforce";
+            info = IFileUtil.readFileToText(key);
+            filesInfos.put(key, info);
+
+            key = "/sys/class/android_usb/android0/state";
+            info = IFileUtil.readFileToText(key);
+            filesInfos.put(key, info);
+
+            key = "/selinux_version";
+            info = IFileUtil.readFileToText(key);
+            filesInfos.put(key, info);
+
+
+            // CPU 核数，注意，要逆向这会不会影响到被 Hooked 的 APP 的运行。
+            key = "/sys/devices/system/cpu/possible";
+            info = IFileUtil.readFileToText(key);
+            filesInfos.put(key, info);
+
+            key = "/sys/devices/system/cpu/present";
+            info = IFileUtil.readFileToText(key);
+            filesInfos.put(key, info);
+
 
 
             // --------------- MAC & /sys/class/net ---------------
@@ -116,6 +145,12 @@ public class HardwareInfo {
 
             readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/cid" );
             readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/cid" );
+
+            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/type" );
+            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/type" );
+
+            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/name" );
+            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/name" );
 
             readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/csd" );
             readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/csd" );
