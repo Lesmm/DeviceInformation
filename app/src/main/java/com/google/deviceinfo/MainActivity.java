@@ -15,11 +15,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.deviceinfo.Manager;
+import com.google.deviceinfo.view.LoadingView;
 
-import org.json.JSONObject;
-
-import common.modules.util.IFileUtil;
 import common.modules.util.IHandlerUtil;
 
 public class MainActivity extends Activity {
@@ -28,7 +25,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        if (!Manager.IS_DEBUG) {
+//        if (!InfoJsonHelper._IS_DEBUG_) {
 //            return;
 //        }
         super.onCreate(savedInstanceState);
@@ -139,39 +136,43 @@ public class MainActivity extends Activity {
         // Manager.checkContextLoadedApkResources(this);
 
         // 开始
-        final MainActivityLoadingView loadingView = findViewById(R.id.loadingView);
-        if (!isForGuiApp) {
-            loadingView.setVisibility(View.INVISIBLE);
-            return;
-        }
-        loadingView.setVisibility(View.VISIBLE);
-        loadingView.selectedShapeId = R.drawable.shape_circle_deeppink;
-        loadingView.selectedSvgId = R.drawable.svg_loading_tadpole_green;
-        loadingView.startAnimation();
-        loadingView.setLoadingText("评分中...");
 
-        final int maxSecond = new java.util.Random().nextInt(8) + 5;
-        final int[] count = new int[1];
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (count[0] < maxSecond) {
-                    count[0]++;
-                    loadingView.setLoadingText("评分中" + count[0] + "s...");
-                    new Handler(Looper.getMainLooper()).postDelayed(this, 1000);
-                } else {
-                    int mark = new java.util.Random().nextInt(40) + 60;
-                    loadingView.setLoadingText("本次得分: " + mark);
-                    loadingView.stopAnimation();
+        final LoadingView loadingView = findViewById(R.id.loadingView);
+        loadingView.setVisibility(View.INVISIBLE);
 
-                    deviceIdTextView.setText("");
-                    subscriberIdTextView.setText("本次得分: " + mark + "分");
+        if (isForGuiApp) {
+            deviceIdTextView.setText("");
+            subscriberIdTextView.setText("");
+
+            loadingView.setVisibility(View.VISIBLE);
+            loadingView.selectedShapeId = R.drawable.shape_circle_deeppink;
+            loadingView.selectedSvgId = R.drawable.svg_loading_tadpole_green;
+            loadingView.startAnimation();
+            loadingView.setLoadingText("评分中...");
+
+            final int maxSecond = new java.util.Random().nextInt(8) + 5;
+            final int[] count = new int[1];
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (count[0] < maxSecond) {
+                        count[0]++;
+                        loadingView.setLoadingText("评分中" + count[0] + "s...");
+                        new Handler(Looper.getMainLooper()).postDelayed(this, 1000);
+                    } else {
+                        int mark = new java.util.Random().nextInt(40) + 60;
+                        loadingView.setLoadingText("本次得分: " + mark);
+                        loadingView.stopAnimation();
+
+                        deviceIdTextView.setText("");
+                        subscriberIdTextView.setText("本次得分: " + mark + "分");
+                    }
                 }
-            }
-        }, 1000);
+            }, 1000);
 
-        if (isAllRuntimePermissionGranted) {
-            Manager.grabInfoAsync();
+            if (isAllRuntimePermissionGranted) {
+                Manager.grabInfoAsync();
+            }
         }
 
     }
