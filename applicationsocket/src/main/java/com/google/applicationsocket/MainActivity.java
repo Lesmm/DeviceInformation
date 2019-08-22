@@ -1,16 +1,13 @@
 package com.google.applicationsocket;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -21,23 +18,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.deviceinfo.ManagerInfo;
+import com.google.applicationsocket.events.MainActivityEvent;
 import com.google.applicationsocket.utils.AlertDialogUtils;
+import com.google.applicationsocket.utils.NetworkUtils;
 
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.net.Socket;
 
 public class MainActivity extends AppCompatActivity {
-
-    private boolean isDebug = true;
-    private boolean isSending = false;
 
     private com.github.ybq.android.spinkit.SpinKitView spinKitView;
     private BroadcastReceiver broadcastReceiver;
@@ -48,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView acceptingTextView;
     private Button sendButton;
+
+    private MainActivityEvent event;
 
     static class StatusHandler extends android.os.Handler {
 
@@ -77,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private StatusHandler acceptingStatusHandler = null;
+    public StatusHandler acceptingStatusHandler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,13 +74,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         acceptingStatusHandler = new StatusHandler(this);
+        event = new MainActivityEvent(this);
 
         // 申请权限
-        boolean isAllRuntimePermissionGranted = checkRuntimePermissions();
+        event.checkRuntimePermissions();
 
         // view
         spinKitView = findViewById(R.id.spin_kit);
-
         deviceIdEditText = findViewById(R.id.deviceIdEditText);
         submitIpEditText = findViewById(R.id.submitIpEditText);
         submitPortEditText = findViewById(R.id.submitPortEditText);
@@ -108,41 +97,50 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        if (isDebug) {
-            submitIpEditText.setText("192.168.4.128");
-        }
+        submitIpEditText.setText(NetworkUtils.getLocalIpAddress(this));
 
         // event
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                String ipString = submitIpEditText.getText().toString();
-                String portString = submitPortEditText.getText().toString();
+                final String ipString = submitIpEditText.getText().toString();
+                final String portString = submitPortEditText.getText().toString();
 
                 if (ipString == null || ipString.isEmpty() || portString == null || portString.isEmpty()) {
                     AlertDialogUtils.show(MainActivity.this, "提示", "请填写地址及端口",
                             "确定", null);
-                    return;
+                } else {
+                    AlertDialogUtils.show(MainActivity.this, "提示", "请确保地址及端口填写正确!?",
+                            "确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    event.sendEvent(ipString, portString);
+                                }
+                            },
+                            "取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // nothing ...
+                                }
+                            });
                 }
-
-                sendEvent();
             }
         });
 
+//        event.startScanOpenPort();
+
+        // 处理Loading View -----------------------------
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-
                 } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-
-                    if (isSending) {
+                    if (event.isSending) {
                         spinKitView.getIndeterminateDrawable().start();
                     }
-
                 }
             }
         };
@@ -151,166 +149,24 @@ public class MainActivity extends AppCompatActivity {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                if (isSending) {
+                if (event.isSending) {
                     spinKitView.getIndeterminateDrawable().start();
                 } else {
                     spinKitView.getIndeterminateDrawable().stop();
                 }
-
                 new Handler().postDelayed(this, 500);
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+        // 处理Loading View -----------------------------
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // 处理Loading View -----------------------------
         unregisterReceiver(broadcastReceiver);
-    }
-
-    private void sendEvent() {
-        if (isSending) {
-            return;
-        }
-
-        final String ipString = submitIpEditText.getText().toString();
-        final String portString = submitPortEditText.getText().toString();
-
-        Thread sendingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                isSending = true;
-
-                Message.obtain(acceptingStatusHandler, -1, "").sendToTarget();
-                Message.obtain(acceptingStatusHandler, 0, "正在获取信息...\n").sendToTarget();
-
-
-                JSONObject jsonObject = ManagerInfo.getInfo(ManagerInfo.getApplication());
-                String contents = jsonObject.toString();
-                // IFileUtil.writeTextToFile(contents, "/sdcard/phoneInfo.json");
-                Message.obtain(acceptingStatusHandler, 0, "正在发送信息...\n").sendToTarget();
-
-                Socket socket = null;
-                InputStream in = null;
-                OutputStream out = null;
-
-                try {
-
-                    try {
-                        socket = new Socket(InetAddress.getByName(ipString), Integer.valueOf(portString));
-                        in = socket.getInputStream();
-                        out = socket.getOutputStream();
-                    } catch (Exception e) {
-                        Message.obtain(acceptingStatusHandler, 0, "请检查地址及端口, 连接失败!\n").sendToTarget();
-                        throw e;
-                    }
-
-                    byte[] buffer = new byte[128 * 1024];
-                    int len = -1;
-
-
-                    // 判断是否可以发送
-                    while ((len = in.read(buffer, 0, buffer.length)) != -1) {
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        byteArrayOutputStream.write(buffer, 0, len);
-                        String str = new String(byteArrayOutputStream.toByteArray(), "utf-8");
-                        if (str.contains("ready2Send")) {
-                            break;
-                        }
-                    }
-
-
-                    // 发送
-                    out.write(contents.getBytes("UTF-8"));
-                    out.flush();
-
-                    out.write("___I_Write_Done___".getBytes("UTF-8"));
-                    out.flush();
-
-
-                    // 判断是否为结束标记
-                    while ((len = in.read(buffer, 0, buffer.length)) != -1) {
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        byteArrayOutputStream.write(buffer, 0, len);
-                        String str = new String(byteArrayOutputStream.toByteArray(), "utf-8");
-                        if (str.contains("ready2Exit")) {
-                            break;
-                        }
-                    }
-                    Message.obtain(acceptingStatusHandler, 0, "发送成功!\n").sendToTarget();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Message.obtain(acceptingStatusHandler, 0, "发送失败!\n").sendToTarget();
-
-                } finally {
-                    try {
-                        if (out != null) {
-                            out.close();
-                        }
-                        if (socket != null) {
-                            socket.close();
-                        }
-                    } catch (IOException e3) {
-                        e3.printStackTrace();
-                    }
-                    isSending = false;
-                }
-
-            }
-        });
-        sendingThread.setName("sending-thread");
-        sendingThread.start();
-    }
-
-    public boolean checkRuntimePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
-//                    || checkSelfPermission(Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED
-            ) {
-
-                android.support.v4.app.ActivityCompat.requestPermissions(this, new String[]{
-                        Manifest.permission.INTERNET,
-
-                        Manifest.permission.READ_PHONE_STATE,
-
-                        Manifest.permission.ACCESS_WIFI_STATE,
-                        Manifest.permission.CHANGE_WIFI_STATE,
-
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-
-                        Manifest.permission.CAMERA,
-//                    Manifest.permission.READ_SMS,
-//
-                        Manifest.permission.READ_CONTACTS,
-//                    Manifest.permission.WRITE_CONTACTS,
-//
-                        Manifest.permission.BODY_SENSORS,
-                        Manifest.permission.RECORD_AUDIO,
-
-                }, 1000);
-
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        return true;
+        // 处理Loading View -----------------------------
     }
 
     @Override
