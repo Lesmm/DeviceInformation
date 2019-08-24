@@ -14,6 +14,50 @@
         android:orientation="vertical">
 
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+
+            android:text="Version: 1.1"
+            android:textSize="11dp" />
+
+
+        <!-- GUID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+
+                android:text="GUID"
+                android:textSize="18dp" />
+
+
+            <EditText
+                android:id="@+id/guidEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="25dp"
+                android:layout_weight="2"
+
+                android:enabled="false"
+                android:text="" />
+
+        </LinearLayout>
+
+
         <!-- IMEI -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -43,6 +87,7 @@
                 android:text="" />
 
         </LinearLayout>
+
 
 
         <!-- 地址 -->

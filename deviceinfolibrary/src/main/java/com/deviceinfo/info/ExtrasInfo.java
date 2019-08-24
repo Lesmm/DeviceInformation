@@ -52,7 +52,7 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
-        // 4. DeviceId 再取一遍
+        // 4. DeviceId 从外层封装的再取一遍，因为高版本的手机有多个IMEI号，aidl的getDeviceId与高层的获取的不一样
         try {
             String deviceId = ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
             info.put("Telephony.DeviceId", deviceId);

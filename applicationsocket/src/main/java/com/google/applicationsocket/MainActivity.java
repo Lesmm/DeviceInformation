@@ -1,5 +1,6 @@
 package com.google.applicationsocket;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import com.google.applicationsocket.events.MainActivityEvent;
 import com.google.applicationsocket.utils.AlertDialogUtils;
+import com.google.applicationsocket.utils.AndroidIdGenerator;
+import com.google.applicationsocket.utils.MicroMsgGuid;
 import com.google.applicationsocket.utils.NetworkUtils;
 
 import java.lang.ref.WeakReference;
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private com.github.ybq.android.spinkit.SpinKitView spinKitView;
     private BroadcastReceiver broadcastReceiver;
 
+    private EditText guidEditText;
     private EditText deviceIdEditText;
     private EditText submitIpEditText;
     private EditText submitPortEditText;
@@ -81,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         // view
         spinKitView = findViewById(R.id.spin_kit);
+        guidEditText = findViewById(R.id.guidEditText);
         deviceIdEditText = findViewById(R.id.deviceIdEditText);
         submitIpEditText = findViewById(R.id.submitIpEditText);
         submitPortEditText = findViewById(R.id.submitPortEditText);
@@ -88,16 +93,7 @@ public class MainActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.sendButton);
 
         // data
-        try {
-            String imei = ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
-            deviceIdEditText.setText(imei);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        submitIpEditText.setText(NetworkUtils.getLocalIpAddress(this));
+        setData();
 
         // event
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -115,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                             "确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    event.sendEvent(ipString, portString);
+                                    event.sendEvent(ipString, portString, MicroMsgGuid.getDeviceId(MainActivity.this));
                                 }
                             },
                             "取消", new DialogInterface.OnClickListener() {
@@ -158,6 +154,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // 处理Loading View -----------------------------
+
+        // AndroidIdGenerator.test();
+    }
+
+    private void setData() {
+        String guid = MicroMsgGuid.get_guid(this);
+        guidEditText.setText(guid);
+
+        String imei = null; // MicroMsgGuid.getDeviceId(MainActivity.this)
+        try {
+            imei = ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+            deviceIdEditText.setText(imei);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (imei == null || imei.isEmpty()) {
+            Message.obtain(acceptingStatusHandler, 0, "获取IMEI失败\n").sendToTarget();
+        }
+        final String fIMEI = imei;
+
+        submitIpEditText.setText(NetworkUtils.getLocalIpAddress(this));
     }
 
     @Override
@@ -173,9 +192,23 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1000) {
             boolean isAllgranted = true;
-            for (int grantResult : grantResults) {
-                isAllgranted = isAllgranted && (grantResult == PackageManager.PERMISSION_GRANTED);
+
+            String[] permissionsWeNeed = MainActivityEvent.getPermissionWeNeed();
+            String permissionsWeNeedString = "";
+            for (String permission : permissionsWeNeed) {
+                permissionsWeNeedString += permission;
             }
+
+            for (int i = 0; i < grantResults.length; i++) {
+                if (permissionsWeNeedString.contains(permissions[i])) {
+                    int grantResult = grantResults[i];
+                    isAllgranted = isAllgranted && (grantResult == PackageManager.PERMISSION_GRANTED);
+                }
+            }
+
+            // refresh data
+            setData();
+
             if (isAllgranted == false) {
                 Toast.makeText(this, "请先赋予所有权限并重新打开APP!", Toast.LENGTH_LONG).show();
                 finish();

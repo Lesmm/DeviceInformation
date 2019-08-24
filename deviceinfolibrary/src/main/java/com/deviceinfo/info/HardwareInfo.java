@@ -179,7 +179,13 @@ public class HardwareInfo {
             // TODO ... Hook 那边 根据下面命令的结果 来处理 ifconfig 带上别的选项的返回情况
             String command = "ifconfig -a";
             String output = IProcessUtil.execCommands(command);
+            if (output.contains("No such device")) {
+                command = "ifconfig";
+                output = IProcessUtil.execCommands(command);
+            }
             commandsInfos.put(command, output);
+
+
 
             // uname -a
             // TODO ... Hook 那边 uname -a 的值里有跟 java.lang.System.java 的 "os.arch", "os.name", "os.version" 对应

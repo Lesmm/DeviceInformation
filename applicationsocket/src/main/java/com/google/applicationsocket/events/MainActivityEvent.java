@@ -30,8 +30,13 @@ public class MainActivityEvent {
         this.activity = activity;
     }
 
-    public void sendEvent(final String ipString, final String portString) {
+    public void sendEvent(final String ipString, final String portString, final String imei) {
         if (isSending) {
+            return;
+        }
+
+        if (imei == null || imei.isEmpty()) {
+            Message.obtain(activity.acceptingStatusHandler, 0, "请赋予权限，获取IMEI失败!\n").sendToTarget();
             return;
         }
 
@@ -143,40 +148,14 @@ public class MainActivityEvent {
 
     public boolean checkRuntimePermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (activity.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
-                    || activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    || activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                    || activity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    || activity.checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
-//                    || checkSelfPermission(Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED
-            ) {
-
-                android.support.v4.app.ActivityCompat.requestPermissions(activity, new String[]{
-                        Manifest.permission.INTERNET,
-
-                        Manifest.permission.READ_PHONE_STATE,
-
-                        Manifest.permission.ACCESS_WIFI_STATE,
-                        Manifest.permission.CHANGE_WIFI_STATE,
-
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-
-                        Manifest.permission.CAMERA,
-//                    Manifest.permission.READ_SMS,
-//
-                        Manifest.permission.READ_CONTACTS,
-//                    Manifest.permission.WRITE_CONTACTS,
-//
-                        Manifest.permission.BODY_SENSORS,
-                        Manifest.permission.RECORD_AUDIO,
-
-                }, 1000);
-
+            String[] permissionWeNeed = getPermissionWeNeed();
+            boolean isAllGranted = true;
+            for (String permission : permissionWeNeed) {
+                isAllGranted = isAllGranted && (activity.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
+            }
+            if (!isAllGranted) {
+                String[] permissionsAskToGrant = getPermissionWeAskToGrant();
+                android.support.v4.app.ActivityCompat.requestPermissions(activity, permissionsAskToGrant, 1000);
                 return false;
             } else {
                 return true;
@@ -184,6 +163,43 @@ public class MainActivityEvent {
         }
 
         return true;
+    }
+
+    public static String[] getPermissionWeNeed() {
+        return new String[]{
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_WIFI_STATE
+        };
+    }
+
+    public static String[] getPermissionWeAskToGrant() {
+        return new String[]{
+                Manifest.permission.INTERNET,
+
+                Manifest.permission.READ_PHONE_STATE,
+
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.CHANGE_WIFI_STATE,
+
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+
+                Manifest.permission.CAMERA,
+
+                Manifest.permission.READ_CONTACTS,
+
+                Manifest.permission.BODY_SENSORS,
+
+                Manifest.permission.RECORD_AUDIO,
+
+        };
     }
 
 }
