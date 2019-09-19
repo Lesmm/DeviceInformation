@@ -17,6 +17,9 @@ import android.widget.Toast;
 
 import com.google.deviceinfo.view.LoadingView;
 
+import org.json.JSONObject;
+
+import common.modules.util.IFileUtil;
 import common.modules.util.IHandlerUtil;
 
 public class MainActivity extends Activity {
@@ -100,8 +103,8 @@ public class MainActivity extends Activity {
 
                         // Manager.grabInfoSync();
 
-//                        JSONObject jsonObject = Manager.getInfo();
-//                        IFileUtil.writeTextToFile(jsonObject.toString(), "/sdcard/phoneInfo.json");
+                        JSONObject jsonObject = Manager.getInfo();
+                        IFileUtil.writeTextToFile(jsonObject.toString(), "/sdcard/phoneInfo.json");
 
                         // JSONObject filesInfos = com.deviceinfo.info.HardwareInfo.getInfoInFiles(Manager.getApplication());
                         // JSONObject mountInfos = com.deviceinfo.info.MountServiceInfo.getInfo(Manager.getApplication());

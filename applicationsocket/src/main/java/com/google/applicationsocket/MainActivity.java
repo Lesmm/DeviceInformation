@@ -1,6 +1,5 @@
 package com.google.applicationsocket;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 
 import com.google.applicationsocket.events.MainActivityEvent;
 import com.google.applicationsocket.utils.AlertDialogUtils;
-import com.google.applicationsocket.utils.AndroidIdGenerator;
 import com.google.applicationsocket.utils.MicroMsgGuid;
 import com.google.applicationsocket.utils.NetworkUtils;
 
@@ -111,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
                             "确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    event.sendEvent(ipString, portString, MicroMsgGuid.getDeviceId(MainActivity.this));
+                                    String deviceId = MicroMsgGuid.getDeviceId(MainActivity.this);
+                                    event.sendEvent(ipString, portString, deviceId);
                                 }
                             },
                             "取消", new DialogInterface.OnClickListener() {
