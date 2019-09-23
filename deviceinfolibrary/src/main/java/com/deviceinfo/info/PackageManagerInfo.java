@@ -10,7 +10,6 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
 import android.util.Log;
 
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONArrayExtended;
@@ -475,7 +474,8 @@ public class PackageManagerInfo {
             return null;
         }
 
-        Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(applicationInfo, IArrayUtil.arrayToList(new String[]{"name", "packageName", "className", "processName", "targetSdkVersion",
+        Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(applicationInfo, IArrayUtil.arrayToList(new String[]{"name", "packageName", "className", "processName",
+                "flags", "targetSdkVersion",
                 "sourceDir", "publicSourceDir", "dataDir"}));
         return new JSONObjectExtended(map);
     }
