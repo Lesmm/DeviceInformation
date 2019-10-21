@@ -9,6 +9,7 @@ import com.deviceinfo.info.BatteryInfo;
 import com.deviceinfo.info.BluetoothManagerInfo;
 import com.deviceinfo.info.BuildInfo;
 import com.deviceinfo.info.ConnectivityManagerInfo;
+import com.deviceinfo.info.DeviceIdentifiersPolicyInfo;
 import com.deviceinfo.info.DisplayManagerInfo;
 import com.deviceinfo.info.ExtrasInfo;
 import com.deviceinfo.info.HardwareInfo;
@@ -57,15 +58,19 @@ public class ManagerInfo {
             JSONObject locationInfo = LocationManagerInfo.getInfo(mContext);
             result.put("Location", locationInfo);
 
+            JSONObject deviceIdentifiersInfo = DeviceIdentifiersPolicyInfo.getInfo(mContext);
+            result.put("DeviceIdentifiers", deviceIdentifiersInfo);
+
             JSONObject buildInfo = BuildInfo.getBuildInfo(mContext);
-            JSONObject buildVersionInfo = BuildInfo.getBuildVersionInfo(mContext);
             result.put("Build", buildInfo);
+
+            JSONObject buildVersionInfo = BuildInfo.getBuildVersionInfo(mContext);
             result.put("Build.VERSION", buildVersionInfo);
 
-            JSONObject subscriptionInfo = SubscriptionManagerInfo.getInfo(mContext);    // 得放在 TelephonyManagerInfo 前，因为 TelephonyManagerInfo 会调它的iterate*方法，不提前会crash
+            JSONObject subscriptionInfo = SubscriptionManagerInfo.getInfo(mContext); // 得放在 TelephonyManagerInfo 前，因为 TelephonyManagerInfo 会调它的iterate*方法，不提前会crash
             result.put("Subscription", subscriptionInfo);
 
-            JSONObject telephonyInfo = TelephonyManagerInfo.getInfo(mContext);
+            JSONObject telephonyInfo = TelephonyManagerInfo.getInfo(mContext, subscriptionInfo);
             result.put("Telephony", telephonyInfo);
 
             JSONObject packageInfo = PackageManagerInfo.getInfo(mContext);

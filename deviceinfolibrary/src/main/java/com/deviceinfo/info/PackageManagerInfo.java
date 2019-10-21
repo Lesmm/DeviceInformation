@@ -377,7 +377,7 @@ public class PackageManagerInfo {
     // ---------------------- 处理 PackageInfo， 提取我们所需要的key-value ----------------------
     public static JSONArray translatePackageInfos2JSONArray(List<PackageInfo> packageInfos) {
         JSONArray array = new JSONArray();
-        for (int i = 0; i < packageInfos.size(); i++) {
+        for (int i = 0; packageInfos != null && i < packageInfos.size(); i++) {
             PackageInfo packageInfo = packageInfos.get(i);
             JSONObject packageInfoJson = translatePackageInfo2JSONObject(packageInfo);
             if (packageInfoJson != null) {

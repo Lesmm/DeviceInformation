@@ -2,7 +2,9 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 
+import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
@@ -13,6 +15,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +28,51 @@ public class WifiManagerInfo {
 
     public static JSONObject getInfo(Context mContext) {
 
+        JSONObject wifiManagerResult = new JSONObject();
+
+        // 通过调用高层接口
+        try {
+            WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+            // 1. 调用高层接口
+            Map managerMap = InvokerOfObject.invokeObjectMethodsWithGetPrefixZeroArgs(wifiManager);
+            JSONObject managerInfo = new JSONObjectExtended(managerMap);
+
+            // 2. 移除掉一些无用的
+            managerInfo.remove("getVerboseLoggingLevel");
+
+            // 3. 转换，与低级API aidl层对应
+            Map<String, String> api2LowerApiMapping = new HashMap();
+            api2LowerApiMapping.put("getWifiApState", "getWifiApEnabledState");
+            api2LowerApiMapping.put("getWifiState", "getWifiEnabledState");
+            for (String key : api2LowerApiMapping.keySet()) {
+                try {
+                    String toKey = api2LowerApiMapping.get(key);
+                    Object obj = managerInfo.opt(key);
+                    if (obj != null) {
+                        managerInfo.put(toKey, obj);
+                    }
+                    if (toKey.startsWith(key)) {
+                        // nothing ...
+                    } else {
+                        managerInfo.remove(key);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            InfoJsonHelper.mergeJSONObject(wifiManagerResult, managerInfo);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 通过反射来获取
         JSONObject info = getIWifiManagerInfo(mContext);
 
-        return info;
+        InfoJsonHelper.mergeJSONObject(wifiManagerResult, info);
+
+        return wifiManagerResult;
     }
 
 
@@ -90,7 +135,7 @@ public class WifiManagerInfo {
                             methodName.equals("getVerboseLoggingLevel") || methodName.equals("getWifiEnabledState") || methodName.equals("getWifiApEnabledState") ||
                             methodName.equals("getChannelList") || methodName.equals("getWifiServiceMessenger") || methodName.equals("reportActivityInfo") ||
                             methodName.equals("getCurrentNetworkWpsNfcConfigurationToken") || methodName.equals("getPasspointConfigurations") || methodName.equals("getWifiStateMachineMessenger") ||
-                            methodName.equals("getSimInfo") ) {
+                            methodName.equals("getSimInfo")) {
                         return null;
                     }
 

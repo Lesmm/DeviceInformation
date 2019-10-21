@@ -11,17 +11,19 @@ import common.modules.util.IPreferenceUtil;
 
 public class IHttpPoster {
 
-    public static final String apiIp_domain_1 = "www.nsshw.com";
+//    public static final String apiIp_domain_1 = "www.nsshw.com";
+//    public static final String apiIp_domain_2 = "www.game8111.com";
+//    public static final String apiIp = "139.9.44.149";      // 华为云
 
-    public static final String apiIp_domain_2 = "www.game8111.com";
+    public static final String apiIp_domain_1 = "www.baidu.com";
+    public static final String apiIp_domain_2 = "www.baidu.com";
+    public static final String apiIp = "192.168.3.208";      // 本机
 
-    public static final String apiIp = "139.9.44.149";      // 华为云
-
-    public static String apiPort = "8080";
+    public static String apiPort = "10086";
 
     public static String apiBase = "http://" + apiIp + ":" + apiPort;
 
-    public static final String addTemplate_controller = "/phonetemplate/addNewTemplate";
+    public static final String addTemplate_controller = "/phonetemplate/addCN";
     public static final String checkConnection_controller = "/common/check_connection";
 
 
@@ -48,6 +50,7 @@ public class IHttpPoster {
         }
         String postString = postJson.toString();
 
+        apiBase = "http://" + apiIp + ":" + apiPort;
         postWithRetry(addTemplate_controller, postString, 3);
     }
 

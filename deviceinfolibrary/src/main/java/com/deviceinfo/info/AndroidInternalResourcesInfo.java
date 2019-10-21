@@ -25,7 +25,7 @@ public class AndroidInternalResourcesInfo {
 
             // getMmsUserAgent() -> mContext.getResources().getString(com.android.internal.R.string.config_mms_user_agent);
             String mmsUserAgent = telephonyManager.getMmsUserAgent();
-            int config_mms_user_agent = (Integer) IReflectUtil.getFieldValue(Class.forName("com.android.internal.R$string"), "config_mms_user_agent");
+            Integer config_mms_user_agent = (Integer) IReflectUtil.getFieldValue(Class.forName("com.android.internal.R$string"), "config_mms_user_agent");
             String mmsUserAgentInResource = mContext.getResources().getString(config_mms_user_agent);
 
             // getMmsUAProfUrl() -> mContext.getResources().getString(com.android.internal.R.string.config_mms_user_agent_profile_url);

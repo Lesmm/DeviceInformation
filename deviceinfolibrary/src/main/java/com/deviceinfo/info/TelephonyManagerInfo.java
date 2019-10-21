@@ -2,6 +2,7 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.InvokerOfObject;
@@ -9,6 +10,7 @@ import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONObjectExtended;
 import com.deviceinfo.ManagerInfo;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
@@ -21,13 +23,143 @@ import common.modules.util.IReflectUtil;
 // done with api diff
 public class TelephonyManagerInfo {
 
-    public static JSONObject getInfo(Context mContext) {
+    public static JSONObject getInfo(Context mContext, JSONObject subscriptionInfo) {
+        JSONObject telephonyResult = new JSONObject();
 
+        // 通过调用高层接口
+        try {
+            // Android 9.0 以后，不能通过反射来获取一些API的值了!!! 所以这里调用高层API再手动处理一下。
+            // https://developer.android.google.cn/distribute/best-practices/develop/restrictions-non-sdk-interfaces?hl=zh_cn
+            // https://developer.android.google.cn/preview/behavior-changes-all?hl=zh_cn#preferences
+            TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+
+            // 1. 调用高层接口
+            Map managerMap = InvokerOfObject.invokeObjectMethodsWithGetPrefixZeroArgs(telephonyManager);
+            JSONObject managerInfo = new JSONObjectExtended(managerMap);
+
+            // 2. 移除掉一些无用的
+            managerInfo.remove("getITelephony");
+            managerInfo.remove("getCarrierConfig"); // TODO ... 里面信息有没有标识设备的信息，有空再看
+            managerInfo.remove("getPhoneCount");
+            managerInfo.remove("getSimCount");  // 与 getPhoneCount 是相同意义的东西
+            managerInfo.remove("getProcCmdLine");   // 与 /proc/cmdline 的值相同, Android 8.0 以上都获取不到的
+            // 都是通过 SystemProperties 获取同步过来的的, 查看 TelephonyManager.getTelephonyProperty 方法，根把phoneId作为index, 添加','作为分隔符
+            managerInfo.remove("getLteOnCdmaModeStatic"); // TODO ... 此值与 SystemProperties.getInt(TelephonyProperties.PROPERTY_LTE_ON_CDMA_DEVICE, ..) 得同步
+            managerInfo.remove("getMultiSimConfiguration"); // TODO ... 此值与 SystemProperties.get(TelephonyProperties.PROPERTY_MULTI_SIM_CONFIG) 得同步
+            managerInfo.remove("getNetworkOperator");
+            managerInfo.remove("getNetworkOperatorName");
+            managerInfo.remove("getSimCountryIso");
+            managerInfo.remove("getSimOperator");
+            managerInfo.remove("getSimOperatorName");
+            managerInfo.remove("getSimOperatorNumeric");
+
+            // 3. 转换，与低级API aidl层对应
+            // getCellLocation 的 key 值不变, value 里的key根据 CellLocation.newFromBundle(bundle) 需把前缀m去掉，再把根在m后的第一个字母变小写
+            JSONObject getCellLocationInfo = managerInfo.optJSONObject("getCellLocation");
+            JSONArray names = getCellLocationInfo != null ? getCellLocationInfo.names() : null;
+            for (int i = 0; names != null && i < names.length(); i++) {
+                try {
+                    String key = names.optString(i);
+                    if (key.startsWith("m") && key.length() > 2) {
+                        String newKey = key.substring(1);
+                        newKey = newKey.substring(0, 1).toLowerCase() + newKey.substring(1, newKey.length() - 1);
+                        getCellLocationInfo.put(newKey, getCellLocationInfo.opt(key));
+                        getCellLocationInfo.remove(key);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Map<String, String> api2LowerApiMapping = new HashMap();
+            api2LowerApiMapping.put("getCurrentPhoneType", "getActivePhoneTypeForSlot"); // TODO ... 此外，还通过getPhoneTypeFromProperty方法获取i.e.'ro.telephony.default_network'以后有空再完善
+            api2LowerApiMapping.put("getDataEnabled", "isUserDataEnabled");
+            api2LowerApiMapping.put("getDataNetworkType", "getDataNetworkTypeForSubscriber");
+            api2LowerApiMapping.put("getDeviceSoftwareVersion", "getDeviceSoftwareVersionForSlot");
+            api2LowerApiMapping.put("getImei", "getImeiForSlot");
+            api2LowerApiMapping.put("getLine1Number", "getLine1NumberForDisplay");
+            api2LowerApiMapping.put("getLteOnCdmaMode", "getLteOnCdmaModeForSubscriber");
+            api2LowerApiMapping.put("getMeid", "getMeidForSlot");
+            api2LowerApiMapping.put("getMsisdn", "getMsisdnForSubscriber");
+            api2LowerApiMapping.put("getNai", "getNaiForSubscriber");
+            api2LowerApiMapping.put("getNetworkCountryIso", "getNetworkCountryIsoForPhone");
+            api2LowerApiMapping.put("getNetworkType", "getNetworkTypeForSubscriber");
+            api2LowerApiMapping.put("getPhoneType", "getActivePhoneTypeForSlot");
+            api2LowerApiMapping.put("getServiceState", "getServiceStateForSubscriber");
+            api2LowerApiMapping.put("getSimCarrierId", "getSubscriptionCarrierId");
+            api2LowerApiMapping.put("getSimSerialNumber", "getIccSerialNumberForSubscriber");
+            api2LowerApiMapping.put("getSubscriberId", "getSubscriberIdForSubscriber");
+            api2LowerApiMapping.put("getVoiceMailAlphaTag", "getVoiceMailAlphaTagForSubscriber");
+            api2LowerApiMapping.put("getVoiceMailNumber", "getVoiceMailNumberForSubscriber");
+            api2LowerApiMapping.put("getVoiceMessageCount", "getVoiceMessageCountForSubscriber");
+            api2LowerApiMapping.put("getVoiceNetworkType", "getVoiceNetworkTypeForSubscriber");
+            for (String key : api2LowerApiMapping.keySet()) {
+                try {
+                    String toKey = api2LowerApiMapping.get(key);
+                    Object obj = managerInfo.opt(key);
+                    if (obj != null) {
+                        managerInfo.put(toKey, obj);
+                    }
+                    if (toKey.startsWith(key)) {
+                        // nothing ...
+                    } else {
+                        managerInfo.remove(key);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            // 4. 需要转到 SubscriptionManager 去的
+            // getDefaultSubI
+            // getNetworkSpecifier 其实就是 getSubId， getSubId 同步去外层 Subscription -> getDefaultSubId, String值改成int
+            Map<String, String> subscriptionMapping = new HashMap<>();
+            String getNetworkSpecifier = managerInfo.optString("getNetworkSpecifier");
+            if (getNetworkSpecifier != null && !getNetworkSpecifier.isEmpty()) {
+                try {
+                    int subId = Integer.parseInt(getNetworkSpecifier);
+                    managerInfo.put("getSubId", subId);
+                    managerInfo.remove("getNetworkSpecifier");
+                    // subscriptionMapping.put("getSubId", "getDefaultSubId"); // 不需要加进来了，SubscriptionManager高层API可以拿到
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            // getSimStateForSlotIndex
+            subscriptionMapping.put("getSimState", "getSimStateForSlotIndex");
+            managerInfo.remove("getSimApplicationState");
+            managerInfo.remove("getSimCardState");
+            // getSlotIndex
+            subscriptionMapping.put("getSlotIndex", "getSlotIndex");
+            for (String key : subscriptionMapping.keySet()) {
+                try {
+                    String toKey = subscriptionMapping.get(key);
+                    Object obj = managerInfo.opt(key);
+                    if (obj != null) {
+                        subscriptionInfo.put(toKey, obj);
+                    }
+                    managerInfo.remove(key);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            // 5. 放到result中
+            InfoJsonHelper.mergeJSONObject(telephonyResult, managerInfo);
+
+            Log.d("DeviceInfo", "_set_debug_here_");
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 通过反射来获取
         JSONObject telephonyInfo = getITelephonyInfo(mContext);
         JSONObject phoneSubInfo = getIPhoneSubInfo(mContext);
         JSONObject telecomInfo = getITelecomInfo(mContext);
-
-        JSONObject telephonyResult = new JSONObject();
 
         InfoJsonHelper.mergeJSONObject(telephonyResult, telephonyInfo);
         InfoJsonHelper.mergeJSONObject(telephonyResult, phoneSubInfo);
@@ -178,7 +310,7 @@ public class TelephonyManagerInfo {
 
                     // public boolean hasIccCardUsingSlotId(int slotId) throws android.os.RemoteException;
                     // public java.util.List<android.service.carrier.CarrierIdentifier> getAllowedCarriers(int slotIndex) throws android.os.RemoteException;  // Android 9.0
-                    if ( methodName.equals("hasIccCardUsingSlotId") || methodName.equals("getAllowedCarriers") ) {
+                    if (methodName.equals("hasIccCardUsingSlotId") || methodName.equals("getAllowedCarriers")) {
                         SubscriptionManagerInfo.ID.iterateActiveSlotIndexes(mContext, new SubscriptionManagerInfo.ID.IterateIdsHandler() {
                             @Override
                             public void handle(int slotId) throws Exception {
@@ -285,6 +417,7 @@ public class TelephonyManagerInfo {
     public static JSONObject getIPhoneSubInfo(final Context mContext) {
         // iphonesubinfo: [com.android.internal.telephony.IPhoneSubInfo]
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+
         Object packageName = IReflectUtil.invokeMethod(mContext, "getOpPackageName", new Class[]{}, new Object[]{});
         if (packageName == null) {
             packageName = mContext.getPackageName();

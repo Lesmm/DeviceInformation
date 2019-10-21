@@ -29,9 +29,72 @@ public class SubscriptionManagerInfo {
     private static int isSupportedFeatureSubscription = -1;
 
     public static JSONObject getInfo(Context mContext) {
+        JSONObject subscriptionResult = new JSONObject();
+
+        // Android 4.4 无此服务 及 SubscriptionManager、SubscriptionInfo 这些 class
+        if (!isSupportedFeatureSubscription()) {
+            return subscriptionResult;
+        }
+
+        // 通过调用高层接口
+        try {
+            SubscriptionManager subscriptionManager = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            // 1. 调用高层接口
+            Map managerMap = InvokerOfObject.invokeObjectMethodsWithGetPrefixZeroArgs(subscriptionManager);
+            JSONObject managerInfo = new JSONObjectExtended(managerMap);
+
+            // 2. 移除掉一些无用的
+            // PhoneId 基本上会调到 int getPhoneId(int subId), 要给subId, 现在先整成不能不同的 subId 返回相同的 phoneId
+            // TODO ...
+            managerInfo.remove("getDefaultDataPhoneId");
+            managerInfo.remove("getDefaultSmsPhoneId");
+            managerInfo.remove("getDefaultVoicePhoneId");
+
+
+            // 3. 转换，与低级API aidl层对应
+            Map<String, String> api2LowerApiMapping = new HashMap();
+            api2LowerApiMapping.put("getActiveSubscriptionIdList", "getActiveSubIdList");
+            api2LowerApiMapping.put("getActiveSubscriptionInfoCount", "getActiveSubInfoCount");
+            api2LowerApiMapping.put("getActiveSubscriptionInfoCountMax", "getActiveSubInfoCountMax");
+            api2LowerApiMapping.put("getAllSubscriptionInfoCount", "getAllSubInfoCount");
+            api2LowerApiMapping.put("getAllSubscriptionInfoList", "getAllSubInfoList");
+
+            // api2LowerApiMapping.put("getDefaultDataPhoneId", "getPhoneId");
+            // api2LowerApiMapping.put("getDefaultSmsPhoneId", "getPhoneId");
+            // api2LowerApiMapping.put("getDefaultVoicePhoneId", "getPhoneId");
+
+            api2LowerApiMapping.put("getDefaultSubscriptionId", "getDefaultSubId");
+            api2LowerApiMapping.put("getDefaultDataSubscriptionId", "getDefaultDataSubId");
+            api2LowerApiMapping.put("getDefaultSmsSubscriptionId", "getDefaultSmsSubId");
+            api2LowerApiMapping.put("getDefaultVoiceSubscriptionId", "getDefaultVoiceSubId");
+            for (String key : api2LowerApiMapping.keySet()) {
+                try {
+                    String toKey = api2LowerApiMapping.get(key);
+                    Object obj = managerInfo.opt(key);
+                    if (obj != null) {
+                        managerInfo.put(toKey, obj);
+                    }
+                    if (toKey.startsWith(key)) {
+                        // nothing ...
+                    } else {
+                        managerInfo.remove(key);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            InfoJsonHelper.mergeJSONObject(subscriptionResult, managerInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 通过反射来获取
         JSONObject subInfo = getISubInfo(mContext);
 
-        return subInfo;
+        InfoJsonHelper.mergeJSONObject(subscriptionResult, subInfo);
+
+        return subscriptionResult;
     }
 
     // Android 4.4 无此服务 及 SubscriptionManager、SubscriptionInfo 这些 class
@@ -60,7 +123,6 @@ public class SubscriptionManagerInfo {
         IBinder mRemote = InvokerOfService.getService("isub");
         Object proxy = InvokerOfService.asInterface("com.android.internal.telephony.ISub$Stub", mRemote);
         final String opPackageName = mContext.getPackageName();
-        SubscriptionManager subscriptionManager = (SubscriptionManager) mContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
 
         if (ManagerInfo._IS_DEBUG_) {
             // ---------------------------- just for look ----------------------------

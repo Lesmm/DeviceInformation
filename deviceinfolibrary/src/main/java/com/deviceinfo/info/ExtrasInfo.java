@@ -102,7 +102,7 @@ public class ExtrasInfo {
                     if (hardwareAddressBytes != null) {
                         StringBuilder stringBuilder = new StringBuilder();
                         for (byte b : hardwareAddressBytes) {
-                            stringBuilder.append(String.format("%02X:", b));
+                            stringBuilder.append(String.format("%02X:", b)); // %02X for uppercase, %02x for lowercase
                         }
                         if (stringBuilder.length() > 0) {
                             stringBuilder.deleteCharAt(stringBuilder.length() - 1);

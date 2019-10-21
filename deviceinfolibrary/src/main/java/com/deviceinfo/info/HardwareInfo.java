@@ -16,6 +16,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.net.NetworkInterface;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import common.modules.util.IFileUtil;
 import common.modules.util.IProcessUtil;
@@ -101,28 +106,34 @@ public class HardwareInfo {
             filesInfos.put(key, info);
 
 
-
             // --------------- MAC & /sys/class/net ---------------
             key = "/proc/net/if_inet6";             // 组成规则看 NetworkInterface.java 的方法 collectIpv6Addresses
             info = IFileUtil.readFileToText(key);
             filesInfos.put(key, info);
 
+            // wlan0
+            String defaultLinkDirPath = "/sys/devices/fb000000.qcom,wcnss-wlan/net";
+            readInterfaceWrapper(filesInfos, "wlan0", defaultLinkDirPath);
 
-            // ------------------------ wlan0 ------------------------
-            String defaultLinkPath = "/sys/devices/fb000000.qcom,wcnss-wlan/net";
+            // p2p0
+            readInterfaceWrapper(filesInfos, "p2p0", defaultLinkDirPath);  // 大多 p2p0 的 address 和 wlan0 的 address 是一样的
 
-            readInterfaceWrapper(filesInfos, "wlan0", defaultLinkPath);
+            // dummy0
+            defaultLinkDirPath = "/sys/devices/virtual/net/";
+            readInterfaceWrapper(filesInfos, "dummy0", defaultLinkDirPath);
 
-            // ------------------------ p2p0 ------------------------
-            // p2p0 这个的 address 倒和上面的 MAC 地址是一样的
-            readInterfaceWrapper(filesInfos, "p2p0", defaultLinkPath);
+            // lo
+            readInterfaceWrapper(filesInfos, "lo", defaultLinkDirPath);
 
-            // ------------------------ dummy0 ------------------------
-            defaultLinkPath = "/sys/devices/virtual/net/";
-            readInterfaceWrapper(filesInfos, "dummy0", defaultLinkPath);
-
-            // ------------------------ lo ------------------------
-            readInterfaceWrapper(filesInfos, "lo", defaultLinkPath);
+            // others
+            List<String> ifNames = getAllInterfacesName();
+            for (int i = 0; ifNames != null && i < ifNames.size(); i++) {
+                String name = ifNames.get(i);
+                if (name.equals("wlan0") || name.equals("p2p0") || name.equals("dummy0") || name.equals("lo")) {
+                    continue;
+                }
+                readInterfaceWrapper(filesInfos, name, null);
+            }
 
 
             // --------------- SDCard cid & csd ---------------
@@ -138,17 +149,17 @@ public class HardwareInfo {
             // 11 0100 303136474532 00 601b2935 4200
             // mid + oemid + name(016GE2)'s ASCII + 00(PRV) + serial + 4200
 
-            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/cid" );
-            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/cid" );
+            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/cid");
+            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/cid");
 
-            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/type" );
-            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/type" );
+            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/type");
+            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/type");
 
-            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/name" );
-            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/name" );
+            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/name");
+            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/name");
 
-            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/csd" );
-            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/csd" );
+            readFileWithSoftLink(filesInfos, "/sys/block/mmcblk0", "/sys/devices/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0", "", "/device/csd");
+            readFileWithSoftLink(filesInfos, "/sys/class/mmc_host/mmc0", "devices/msm_sdcc.1/mmc_host/mmc0", "", "/mmc0:0001/csd");
 
             // TODO ... Hook 那边, /sys/class/net 下的其余接口如 rev_rmnet0 等等的址，跟 ifconfig -a 的输出 HWaddr 值是一致的，可以根据此命令的Json内容来处理
 
@@ -186,7 +197,6 @@ public class HardwareInfo {
             commandsInfos.put(command, output);
 
 
-
             // uname -a
             // TODO ... Hook 那边 uname -a 的值里有跟 java.lang.System.java 的 "os.arch", "os.name", "os.version" 对应
             command = "uname -a";
@@ -214,37 +224,52 @@ public class HardwareInfo {
         return commandsInfos;
     }
 
-    private static void readInterfaceWrapper(JSONObject filesInfos, String ifName, String defaultLinkPath) {
-        readFileWithSoftLink(filesInfos, "/sys/class/net/", defaultLinkPath, ifName, "/address");
-        readFileWithSoftLink(filesInfos, "/sys/class/net/", defaultLinkPath, ifName, "/ifindex");
+    private static void readInterfaceWrapper(JSONObject filesInfos, String ifName, String defaultLinkDirPath) {
+        boolean isAdded = readFileWithSoftLink(filesInfos, "/sys/class/net/", defaultLinkDirPath, ifName, "/address");
+        if (!isAdded) {
+            return;
+        }
+        readFileWithSoftLink(filesInfos, "/sys/class/net/", defaultLinkDirPath, ifName, "/ifindex");
     }
 
-    private static void readFileWithSoftLink(JSONObject filesInfos, String path, String defaultLinkPath, String ifName, String subKey) {
+    private static boolean readFileWithSoftLink(JSONObject filesInfos, String dirPath, String defaultLinkDirPath, String ifName, String fileName) {
         try {
-            String mainKey = path + ifName;
-            String defaultLinkKey = new File(defaultLinkPath + "/" + ifName).getAbsolutePath(); // 去掉多余的斜杠 /
-            String key = new File(mainKey + "/" + subKey).getAbsolutePath();
 
             // 处理一下主要的
-            String info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+            String mainDirPath = removeRedundantSlash(dirPath + ifName);
+            String mainFullPath = removeRedundantSlash(mainDirPath + "/" + fileName);
+
+            String info = IFileUtil.readFileToText(mainFullPath);
+            if (info == null || info.trim().isEmpty()) {
+                return false;
+            }
+            filesInfos.put(mainFullPath, info);
 
             // 处理一下Link
-            String readlink = readLink(mainKey);
-            if (readlink != null && !readlink.isEmpty()) {
-                key = new File(readlink + subKey).getAbsolutePath();
+            String dirlink = readLink(mainDirPath);
+            // 如果是两都是空，就处理Link了
+            if ((defaultLinkDirPath != null && !defaultLinkDirPath.isEmpty()) || (dirlink != null && !dirlink.isEmpty())) {
+                String defaultLinkKey = removeRedundantSlash(defaultLinkDirPath + "/" + ifName);
 
-                info = IFileUtil.readFileToText(key);
-                filesInfos.put(key, info);
-            } else {
-                key = defaultLinkKey + subKey;
+                String link = (dirlink == null || dirlink.isEmpty()) ? defaultLinkKey : dirlink;
+                String linkFullPath = removeRedundantSlash(link + fileName);
 
-                info = IFileUtil.readFileToText(key);
-                filesInfos.put(key, info);
+                String linkInfo = IFileUtil.readFileToText(linkFullPath);
+                if (linkInfo != null && !linkInfo.trim().isEmpty()) {
+                    filesInfos.put(linkFullPath, linkInfo);
+                }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return true;
+    }
+
+    private static String removeRedundantSlash(String path) {
+        String purePath = new File(path).getAbsolutePath();
+        return purePath;
     }
 
     private static String readLink(String path) {
@@ -267,6 +292,25 @@ public class HardwareInfo {
             }
         }
         return null;
+    }
+
+
+    private static List<String> getAllInterfacesName() {
+        List<NetworkInterface> allInterfaces = null;
+        try {
+            allInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<String> names = new ArrayList<>();
+        for (int i = 0; allInterfaces != null && i < allInterfaces.size(); i++) {
+            NetworkInterface netInterface = allInterfaces.get(i);
+            String ifName = netInterface.getName();
+            names.add(ifName);
+        }
+
+        return names;
     }
 
 }

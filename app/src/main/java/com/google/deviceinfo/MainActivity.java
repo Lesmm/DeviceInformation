@@ -101,13 +101,10 @@ public class MainActivity extends Activity {
                         // ------------------------------------------------<<<
 
 
-                        // Manager.grabInfoSync();
+//                        Manager.grabInfoSync();
 
                         JSONObject jsonObject = Manager.getInfo();
                         IFileUtil.writeTextToFile(jsonObject.toString(), "/sdcard/phoneInfo.json");
-
-                        // JSONObject filesInfos = com.deviceinfo.info.HardwareInfo.getInfoInFiles(Manager.getApplication());
-                        // JSONObject mountInfos = com.deviceinfo.info.MountServiceInfo.getInfo(Manager.getApplication());
 
                         // ------------------------------------------------>>>
                         IHandlerUtil.postToMainThread(new Runnable() {
