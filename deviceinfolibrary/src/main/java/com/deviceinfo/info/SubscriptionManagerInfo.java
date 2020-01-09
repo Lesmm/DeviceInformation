@@ -230,8 +230,8 @@ public class SubscriptionManagerInfo {
                             });
                         }
 
-
-                        if (methodName.equals("getSubId") || methodName.equals("getSimStateForSlotIdx")) {
+                        // Android 6.0 is getSimStateForSlotIdx , Android 8.0 is getSimStateForSlotIndex
+                        if (methodName.equals("getSubId") || methodName.equals("getSimStateForSlotIdx") || methodName.equals("getSimStateForSlotIndex")) {
                             // slotId
                             ID.iterateActiveSlotIndexes(mContext, new ID.IterateIdsHandler() {
                                 @Override
@@ -446,7 +446,7 @@ public class SubscriptionManagerInfo {
         private static int[] activeSubIds = null;
 
         private static int[] getActiveSubIds(Context mContext) {
-            if (activeSubIds == null) {
+            if (activeSubIds == null || activeSubIds.length == 0) {
                 List<SubscriptionInfo> activeList = INFO.getActiveSubscriptionInfoList(mContext);
                 if (activeList != null) {
                     activeSubIds = new int[activeList.size()];
@@ -456,8 +456,9 @@ public class SubscriptionManagerInfo {
                         activeSubIds[i] = subscriptionId;
                     }
                 }
-            } else {
-                activeSubIds = new int[0];
+                if (activeSubIds == null){
+                    activeSubIds = new int[0];
+                }
             }
             return activeSubIds;
         }
