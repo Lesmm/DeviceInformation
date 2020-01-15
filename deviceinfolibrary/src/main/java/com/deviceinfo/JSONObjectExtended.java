@@ -158,7 +158,7 @@ public class JSONObjectExtended extends JSONObject {
                         continue;
                     }
 
-                    if (fieldName.equals("shadow$_monitor_") || fieldName.equals("shadow$_klass_") || fieldName.equals("CREATOR")) {
+                    if (fieldName.equals("shadow$_monitor_") || fieldName.equals("shadow$_klass_") || fieldName.equals("CREATOR") || fieldName.equals("mRemote")) {
                         continue;
                     }
 

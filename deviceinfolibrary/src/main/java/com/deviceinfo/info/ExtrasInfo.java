@@ -1,6 +1,8 @@
 package com.deviceinfo.info;
 
 import android.content.Context;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
@@ -22,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import common.modules.util.IReflectUtil;
 
 public class ExtrasInfo {
 
@@ -88,6 +92,22 @@ public class ExtrasInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // 地理位置
+        try {
+            LocationManager locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                info.put("Location.longitude", location.getLongitude());
+                info.put("Location.latitude", location.getLatitude());
+                info.put("Location.location", IReflectUtil.objectFieldNameValues(location));
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return info;
     }
 

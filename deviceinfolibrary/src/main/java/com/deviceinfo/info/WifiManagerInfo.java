@@ -30,9 +30,16 @@ public class WifiManagerInfo {
 
         JSONObject wifiManagerResult = new JSONObject();
 
+        WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+
+        try {
+            wifiManager.startScan();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 通过调用高层接口
         try {
-            WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
             // 1. 调用高层接口
             Map managerMap = InvokerOfObject.invokeObjectMethodsWithGetPrefixZeroArgs(wifiManager);
             JSONObject managerInfo = new JSONObjectExtended(managerMap);
