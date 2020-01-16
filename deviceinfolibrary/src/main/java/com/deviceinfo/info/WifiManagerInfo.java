@@ -32,11 +32,11 @@ public class WifiManagerInfo {
 
         WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
 
-        try {
-            wifiManager.startScan();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            wifiManager.startScan();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         // 通过调用高层接口
         try {
