@@ -105,6 +105,11 @@ public class HardwareInfo {
             info = IFileUtil.readFileToText(key);
             filesInfos.put(key, info);
 
+            // 与 Build.SERIAL / Build.getSerial() 的值一致
+            key = "/sys/class/android_usb/android0/iSerial";
+            info = IFileUtil.readFileToText(key);
+            filesInfos.put(key, info);
+
 
             // --------------- MAC & /sys/class/net ---------------
             key = "/proc/net/if_inet6";             // 组成规则看 NetworkInterface.java 的方法 collectIpv6Addresses
