@@ -2,15 +2,73 @@ package common.modules.util;
 
 import android.util.Log;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class IReflectUtil {
+
+    public static Class getMethodGenericReturnType(Method method) {
+        // https://stackoverflow.com/a/15702911
+        Class<?> genericClazz = null;
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) genericReturnType;
+            Type[] argTypes = paramType.getActualTypeArguments();
+            if (argTypes.length > 0) {
+                genericClazz = (Class<?>) argTypes[0];
+            }
+        }
+        return genericClazz;
+    }
+
+    public static Object newInstanceOf(Class clazz) {
+        try {
+            Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+            for (int j = 0; j < constructors.length; j++) {
+                Constructor c = constructors[j];
+                c.setAccessible(true);
+                Class<?>[] parameterTypes = c.getParameterTypes();
+                if (parameterTypes.length == 0) {
+                    // 无参构造函数
+                    return c.newInstance();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Object newInstanceOf(Class clazz, Class[] parameterTypes, Object[] parameterValues) {
+        Constructor c = null;
+        while (c == null && clazz != null) {
+            try {
+                c = clazz.getDeclaredConstructor(parameterTypes);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            clazz = clazz.getSuperclass();
+        }
+
+        Object instance = null;
+        if (c != null) {
+            try {
+                c.setAccessible(true);
+                instance = c.newInstance(parameterValues);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return instance;
+    }
 
     public static interface IterateFieldHandler {
         public boolean action(Class<?> clazz, Field field, String fieldName);

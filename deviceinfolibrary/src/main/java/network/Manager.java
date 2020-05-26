@@ -1,4 +1,4 @@
-package com.google.deviceinfo;
+package network;
 
 import android.app.Activity;
 import android.app.Application;
@@ -8,8 +8,6 @@ import android.os.Build;
 import android.util.Log;
 
 import com.deviceinfo.ManagerInfo;
-import com.google.deviceinfo.network.IHttpFacade;
-import com.google.deviceinfo.network.IHttpPoster;
 
 import org.json.JSONObject;
 
@@ -26,11 +24,23 @@ public class Manager {
     public static final String __key_is_dev_info_got__ = "__key_is_dev_info_got__";
     public static final String __sdcard_file_name_info__ = "/sdcard/phoneInfo.json";
 
+    public static interface GrabInfoAsyncCallback {
+        public void done();
+    }
+
     public static void grabInfoAsync() {
+        grabInfoAsync(null);
+    }
+
+    public static void grabInfoAsync(final GrabInfoAsyncCallback callback) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 Manager.grabInfoSync();
+
+                if (callback != null) {
+                    callback.done();
+                }
             }
         }).start();
 
@@ -72,7 +82,7 @@ public class Manager {
         return ManagerInfo.getInfo(mContext);
     }
 
-    public static android.app.Application getApplication() {
+    public static Application getApplication() {
         try {
             Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
             // Object currentActivityThread = activityThreadClazz.getMethod("currentActivityThread").invoke(activityThreadClazz);

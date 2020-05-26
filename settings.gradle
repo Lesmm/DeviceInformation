@@ -1,1 +1,2 @@
 include ':app', ':deviceinfolibrary', ':applicationsocket'
+include ':applicationgui'

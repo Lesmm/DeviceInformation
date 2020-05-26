@@ -7,11 +7,12 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.ManagerInfo;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 
 import common.modules.util.IReflectUtil;
@@ -30,14 +31,63 @@ public class BatteryInfo {
 
         JSONObject batteryStatsInfo = getBroadcastBatteryInfo(mContext);
 
+        // 电池状态
         try {
             info.put("Broadcast", batteryStatsInfo);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return info;
+        // 电池容量
+        final Map result0 = new HashMap();
+        final Map result1 = new HashMap();
 
+        try {
+            final Class PowerProfile = Class.forName("com.android.internal.os.PowerProfile");
+            Object powerProfileObj = IReflectUtil.newInstanceOf(PowerProfile, new Class[]{Context.class}, new Object[]{mContext});
+            Double batteryCapacity = (Double) IReflectUtil.invokeMethod(powerProfileObj, "getAveragePower",
+                    new Class[]{String.class}, new Object[]{"battery.capacity"});
+
+            result0.put("battery.capacity", batteryCapacity);
+
+            IReflectUtil.iterateFields(PowerProfile, new IReflectUtil.IterateFieldHandler() {
+                @Override
+                public boolean action(Class<?> clazz, Field field, String fieldName) {
+                    Class<?> type = field.getType();
+                    if (!Map.class.isAssignableFrom(type)) {
+                        return false;
+                    }
+                    try {
+                        // static final HashMap<String, Double> sPowerItemMap = new HashMap<>();
+                        // static final HashMap<String, Double[]> sPowerArrayMap = new HashMap<>();
+                        Map map = (Map) field.get(clazz);
+                        if (map != null && map.size() > 0) {
+                            Object value = map.get(map.keySet().toArray()[0]);
+                            Class valueClazz = value.getClass();
+                            if (valueClazz == Double.class) {
+                                result0.putAll(map);
+                            } else if (valueClazz == Double[].class) {
+                                result1.putAll(map);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return false;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            info.put("PowerProfile.Item", new JSONObject(result0));
+            // info.put("PowerProfile.Array", new JSONObject(result1));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return info;
     }
 
     private static BroadcastReceiver broadcastReceiver = null;

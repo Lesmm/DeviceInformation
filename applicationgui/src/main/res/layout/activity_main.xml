@@ -9,33 +9,41 @@
         android:id="@+id/buildModelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:gravity="center"
-        android:text="Build.Model"
-        android:textColor="@color/black" />
+        android:layout_centerInParent="true"
+        android:textColor="@color/black"
+        android:text="Build.Model" />
 
     <TextView
         android:id="@+id/deviceIdTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/buildModelTextView"
+        android:gravity="center"
         android:layout_centerHorizontal="true"
 
         android:layout_marginTop="18dp"
-        android:gravity="center"
-        android:text="DeviceId"
-        android:textColor="@color/black" />
+        android:layout_below="@+id/buildModelTextView"
+        android:textColor="@color/black"
+        android:text="DeviceId" />
 
     <TextView
         android:id="@+id/subscriberIdTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/deviceIdTextView"
+        android:gravity="center"
         android:layout_centerHorizontal="true"
 
         android:layout_marginTop="18dp"
-        android:gravity="center"
-        android:text="SubscriberId"
-        android:textColor="@color/black" />
+        android:layout_below="@+id/deviceIdTextView"
+        android:textColor="@color/black"
+        android:text="SubscriberId" />
+
+    <com.google.applicationgui.view.LoadingView
+        android:id="@+id/loadingView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="invisible"
+        />
 
 </RelativeLayout>

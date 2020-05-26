@@ -1,8 +1,6 @@
-package com.google.deviceinfo.network;
+package network;
 
 import android.util.Log;
-
-import com.google.deviceinfo.Manager;
 
 import org.json.JSONObject;
 

@@ -1,4 +1,4 @@
-package com.google.deviceinfo.view;
+package com.google.applicationgui.view;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.deviceinfo.R;
+import com.google.applicationgui.R;
 
 import java.util.Random;
 

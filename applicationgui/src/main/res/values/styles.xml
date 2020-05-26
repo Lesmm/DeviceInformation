@@ -1,0 +1,16 @@
+<resources>
+
+    <style name="AppTheme" parent="">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@color/white</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="" />
+
+    <style name="AppTheme.PopupOverlay" parent="" />
+
+</resources>

@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -15,16 +13,13 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.deviceinfo.view.LoadingView;
-
 import org.json.JSONObject;
 
 import common.modules.util.IFileUtil;
 import common.modules.util.IHandlerUtil;
+import network.Manager;
 
 public class MainActivity extends Activity {
-
-    public boolean isForGuiApp = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +59,6 @@ public class MainActivity extends Activity {
         buildModelTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isForGuiApp) {
-                    return;
-                }
                 // ------------------------------------------------>>>
                 final TextView textView = (TextView) v;
                 final int KEY_IS_GETTING = R.id.buildModelTextView;
@@ -134,49 +126,7 @@ public class MainActivity extends Activity {
 
         // 测试代码
         // Manager.checkContextLoadedApkResources(this);
-
-        // 开始
-
-        final LoadingView loadingView = findViewById(R.id.loadingView);
-        loadingView.setVisibility(View.INVISIBLE);
-
-        if (isForGuiApp) {
-            deviceIdTextView.setText("");
-            subscriberIdTextView.setText("");
-
-            loadingView.setVisibility(View.VISIBLE);
-            loadingView.selectedShapeId = R.drawable.shape_circle_deeppink;
-            loadingView.selectedSvgId = R.drawable.svg_loading_tadpole_green;
-            loadingView.startAnimation();
-            loadingView.setLoadingText("评分中...");
-
-            final int maxSecond = new java.util.Random().nextInt(8) + 5;
-            final int[] count = new int[1];
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (count[0] < maxSecond) {
-                        count[0]++;
-                        loadingView.setLoadingText("评分中" + count[0] + "s...");
-                        new Handler(Looper.getMainLooper()).postDelayed(this, 1000);
-                    } else {
-                        int mark = new java.util.Random().nextInt(40) + 60;
-                        loadingView.setLoadingText("本次得分: " + mark);
-                        loadingView.stopAnimation();
-
-                        deviceIdTextView.setText("");
-                        subscriberIdTextView.setText("本次得分: " + mark + "分");
-                    }
-                }
-            }, 1000);
-
-            if (isAllRuntimePermissionGranted) {
-                Manager.grabInfoAsync();
-            }
-        }
-
     }
-
 
     public boolean checkRuntimePermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -228,15 +178,8 @@ public class MainActivity extends Activity {
             for (int grantResult : grantResults) {
                 isAllgranted = isAllgranted && (grantResult == PackageManager.PERMISSION_GRANTED);
             }
-            if (isAllgranted == false) {
+            if (!isAllgranted) {
                 Toast.makeText(this, "请先赋予所有权限并重新打开APP，再跑分!", Toast.LENGTH_LONG).show();
-                if (isForGuiApp) {
-                    finish();
-                }
-            } else {
-                if (isForGuiApp) {
-                    Manager.grabInfoAsync();
-                }
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

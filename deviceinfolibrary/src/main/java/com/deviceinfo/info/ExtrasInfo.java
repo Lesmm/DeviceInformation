@@ -1,9 +1,12 @@
 package com.deviceinfo.info;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Looper;
+import android.system.Os;
+import android.system.StructUtsname;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
@@ -32,6 +35,27 @@ public class ExtrasInfo {
     public static JSONObject getInfo(Context mContext) {
         JSONObject info = new JSONObject();
 
+        // 宿主App的信息，记录一下
+        try {
+            String packageName = mContext.getPackageName();
+            String grabDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
+            info.put("Captor.PackageName", packageName);
+            info.put("Captor.Date", grabDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // DeviceId 从外层封装的再取一遍，因为高版本的手机有多个IMEI号，aidl的getDeviceId与高层的获取的不一样
+        try {
+            String deviceId = ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+            info.put("Telephony.DeviceId", deviceId);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         // 1. All interfaces address in other way
         JSONObject addressInfo = getAllInterfacesAddress();
         try {
@@ -56,27 +80,7 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
-        // 4. DeviceId 从外层封装的再取一遍，因为高版本的手机有多个IMEI号，aidl的getDeviceId与高层的获取的不一样
-        try {
-            String deviceId = ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
-            info.put("Telephony.DeviceId", deviceId);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // 5. 宿主App的信息，记录一下
-        try {
-            String packageName = mContext.getPackageName();
-            String grabDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
-            info.put("Captor.PackageName", packageName);
-            info.put("Captor.Date", grabDate);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // 6. 可用核数
+        // 4. 可用核数
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         int coreCount = new File("/sys/devices/system/cpu/").listFiles(new FileFilter(){
             public final boolean accept(File file) {
@@ -93,7 +97,7 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
-        // 地理位置
+        // 5. 地理位置
         try {
             LocationManager locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -107,6 +111,43 @@ public class ExtrasInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // 6. 系统信息 uname
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            StructUtsname uname = Os.uname();
+
+            JSONObject unameInfo = new JSONObject();
+            try {
+                info.put("Sys.Uname", unameInfo);
+                unameInfo.put("version", uname.version);
+                unameInfo.put("release", uname.release);
+                unameInfo.put("sysname", uname.sysname);
+                unameInfo.put("nodename", uname.nodename);
+                unameInfo.put("machine", uname.machine);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // 7. 内存信息
+        ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo amMemoryInfo = new ActivityManager.MemoryInfo();
+        am.getMemoryInfo(amMemoryInfo);
+        long totalMemory = amMemoryInfo.totalMem;
+
+        Long totalMemVal = (Long) IReflectUtil.invokeClassMethod("android.os.Process", "getTotalMemory", null, null);
+        long totalMem = totalMemVal != null ? totalMemVal : 0;
+
+        JSONObject memoryJson = new JSONObject();
+        try {
+            info.put("Sys.Memory", memoryJson);
+            memoryJson.put("MemTotal", totalMemory != 0 ? totalMemory : totalMem);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
 
         return info;
     }
@@ -162,16 +203,17 @@ public class ExtrasInfo {
 
         boolean isInMainThread = Looper.getMainLooper() == Looper.myLooper();
         if (isInMainThread) {
+
             // -------------------- the same ------------------
             String userAgent = new WebView(mContext).getSettings().getUserAgentString();
             results[0] = userAgent;
             // -------------------- the same ------------------
 
         } else {
-
             new android.os.Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
+
                     // -------------------- the same ------------------
                     String userAgent = new WebView(mContext).getSettings().getUserAgentString();
                     results[0] = userAgent;
@@ -185,7 +227,6 @@ public class ExtrasInfo {
                             e.printStackTrace();
                         }
                     }
-
                 }
             });
 
@@ -201,7 +242,5 @@ public class ExtrasInfo {
         }
         return results[0];
     }
-
-
 
 }

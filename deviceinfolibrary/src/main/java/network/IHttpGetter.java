@@ -1,7 +1,5 @@
-package com.google.deviceinfo.network;
+package network;
 
-
-import com.google.deviceinfo.Manager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

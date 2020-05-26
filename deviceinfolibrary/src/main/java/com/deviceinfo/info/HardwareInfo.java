@@ -16,11 +16,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.lang.reflect.Array;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import common.modules.util.IFileUtil;
 import common.modules.util.IProcessUtil;
@@ -54,61 +56,75 @@ public class HardwareInfo {
             }
         }
 
-        JSONObject filesInfos = new JSONObject();
+        final JSONObject filesInfos = new JSONObject();
 
         try {
 
-            // --------------- cpu, meminfo ... ---------------
-            String key = "/proc/cpuinfo";                   // 这个输出比较特别，用 cat 与 BufferedReader 读出的同容不一样。 cmake or ndk 加上 NEON 支持。
-            String info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+            String key = "";
+            String info = "";
 
-            key = "/proc/meminfo";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+            String[] proc_files = new String[]{
+                    // cpu, meminfo, proc info
+                    "/proc/cpuinfo",    // 这个输出比较特别，用 cat 与 BufferedReader 读出的同容不一样。 cmake or ndk 加上 NEON 支持。
 
-            key = "/proc/version";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    "/proc/meminfo",
+                    "/proc/version",
+                    "/proc/mounts",
+                    "/proc/cmdline",
+                    "/proc/tty/drivers",
 
-            key = "/proc/mounts";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    // SELinux
+                    "/sys/fs/selinux/enforce",
+                    "/sys/fs/selinux/mls",
 
-            key = "/proc/cmdline";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    "/sys/fs/sdfat/version",
 
-            key = "/proc/tty/drivers";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    // CPU 核数，注意，要逆向这会不会影响到被 Hooked 的 APP 的运行。
+                    "/sys/devices/system/cpu/possible",
+                    "/sys/devices/system/cpu/present",
+                    "/sys/devices/system/cpu/online",
+                    "/sys/devices/system/cpu/kernel_max",
 
-            key = "/sys/fs/selinux/enforce";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    // unknown
+                    "/sys/class/android_usb/android0/state",
 
-            key = "/sys/class/android_usb/android0/state";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    // 与 Build.SERIAL / Build.getSerial() 的值一致
+                    "/sys/class/android_usb/android0/iSerial",
+            };
+            for (int i = 0; i < proc_files.length; i++) {
+                String path = proc_files[i];
+                filesInfos.put(path, IFileUtil.readFileToText(path));
+            }
 
-            key = "/selinux_version";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+            // CPU 核子信息
+            new File("/sys/devices/system/cpu").listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    boolean isCore = Pattern.matches("cpu[0-9]", pathname.getName());
+                    if (!isCore) {
+                        return false;
+                    }
 
+                    String core_dir = pathname.getAbsolutePath();
+                    String cpufreq_dir = core_dir + "/cpufreq";
+                    new File(cpufreq_dir).listFiles(new FileFilter() {
+                        @Override
+                        public boolean accept(File pathname) {
+                            String path = pathname.getAbsolutePath();
+                            if (path.startsWith("cpuinfo_") || path.startsWith("scaling_")) {
+                                try {
+                                    filesInfos.put(path, IFileUtil.readFileToText(path));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            return false;
+                        }
+                    });
 
-            // CPU 核数，注意，要逆向这会不会影响到被 Hooked 的 APP 的运行。
-            key = "/sys/devices/system/cpu/possible";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
-
-            key = "/sys/devices/system/cpu/present";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
-
-            // 与 Build.SERIAL / Build.getSerial() 的值一致
-            key = "/sys/class/android_usb/android0/iSerial";
-            info = IFileUtil.readFileToText(key);
-            filesInfos.put(key, info);
+                    return true;
+                }
+            });
 
 
             // --------------- MAC & /sys/class/net ---------------
