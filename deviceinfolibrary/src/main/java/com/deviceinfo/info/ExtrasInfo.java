@@ -4,7 +4,9 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Environment;
 import android.os.Looper;
+import android.os.StatFs;
 import android.system.Os;
 import android.system.StructUtsname;
 import android.telephony.TelephonyManager;
@@ -147,6 +149,56 @@ public class ExtrasInfo {
         }
 
 
+        // 文件信息
+        JSONObject statfsJson = new JSONObject();
+
+        String path = "";
+        StatFs stat = null;
+        long blockSize = 0;
+        long blockCount = 0;
+        try {
+            JSONObject json = null;
+
+            path = Environment.getExternalStorageDirectory().getPath();  // "/storage/emulated/0"
+            stat = new StatFs(path);
+            blockSize = stat.getBlockSizeLong();
+            blockCount = stat.getBlockCountLong();
+
+            json = new JSONObject();
+            json.put("block_size", blockSize);
+            json.put("block_count", blockCount);
+            statfsJson.put(path, json);
+
+            path = "/sdcard";
+            stat = new StatFs(path);
+            blockSize = stat.getBlockSizeLong();
+            blockCount = stat.getBlockCountLong();
+
+            json = new JSONObject();
+            json.put("block_size", blockSize);
+            json.put("block_count", blockCount);
+            statfsJson.put(path, json);
+
+            path = Environment.getDataDirectory().getPath(); // "/data"
+            stat = new StatFs(path);
+            blockSize = stat.getBlockSizeLong();
+            blockCount = stat.getBlockCountLong();
+
+            json = new JSONObject();
+            json.put("block_size", blockSize);
+            json.put("block_count", blockCount);
+            statfsJson.put(path, json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (statfsJson.length() != 0) {
+                info.put("StatFs.Info", statfsJson);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         return info;

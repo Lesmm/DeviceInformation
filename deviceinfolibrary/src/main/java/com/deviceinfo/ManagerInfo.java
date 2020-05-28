@@ -7,6 +7,7 @@ import android.util.Log;
 import com.deviceinfo.info.AndroidInternalResourcesInfo;
 import com.deviceinfo.info.BatteryInfo;
 import com.deviceinfo.info.BluetoothManagerInfo;
+import com.deviceinfo.info.BroadcastInfo;
 import com.deviceinfo.info.BuildInfo;
 import com.deviceinfo.info.ConnectivityManagerInfo;
 import com.deviceinfo.info.DeviceIdentifiersPolicyInfo;
@@ -40,7 +41,10 @@ public class ManagerInfo {
 
         try {
 
-            JSONObject batteryInfo = BatteryInfo.getInfo(mContext);     // 放最前吧，因为它要等通知回来。获取不到也无所谓的，有就最好。
+            JSONObject broadcastInfo = BroadcastInfo.getInfo(mContext);// 放最前吧，因为它要等通知回来。获取不到也无所谓的，有就最好。
+            result.put("Broadcast", broadcastInfo);
+
+            JSONObject batteryInfo = BatteryInfo.getInfo(mContext);
             result.put("Battery", batteryInfo);
 
             JSONArray sensorsInfo = SensorsInfo.getInfo(mContext);

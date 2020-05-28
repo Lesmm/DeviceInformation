@@ -246,6 +246,21 @@ public class IJSONObjectUtil {
 		}
 	}
 
+
+	public static void putAll(JSONObject TO, JSONObject FROM) {
+		java.util.Iterator<String> iterator = FROM.keys();
+		while (iterator.hasNext()) {
+			String key = iterator.next();
+			Object value = FROM.opt(key);
+
+			try {
+				TO.put(key, value);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	/*
 	 * Iterate Json
 	 */

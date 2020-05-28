@@ -1,13 +1,6 @@
 package com.deviceinfo.info;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
-import android.util.Log;
-
-import com.deviceinfo.ManagerInfo;
 
 import org.json.JSONObject;
 
@@ -29,25 +22,18 @@ public class BatteryInfo {
 
         JSONObject info = new JSONObject();
 
-        JSONObject batteryStatsInfo = getBroadcastBatteryInfo(mContext);
-
-        // 电池状态
-        try {
-            info.put("Broadcast", batteryStatsInfo);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // 电池容量
         final Map result0 = new HashMap();
         final Map result1 = new HashMap();
 
         try {
+            // 要预先获取一遍
             final Class PowerProfile = Class.forName("com.android.internal.os.PowerProfile");
             Object powerProfileObj = IReflectUtil.newInstanceOf(PowerProfile, new Class[]{Context.class}, new Object[]{mContext});
             Double batteryCapacity = (Double) IReflectUtil.invokeMethod(powerProfileObj, "getAveragePower",
                     new Class[]{String.class}, new Object[]{"battery.capacity"});
 
+            // TODO ..... 其实还不够准确， getAveragePower 方法会从第二个 Map 来获取，当第一个 Map 没有这 Key 值的时候
             result0.put("battery.capacity", batteryCapacity);
 
             IReflectUtil.iterateFields(PowerProfile, new IReflectUtil.IterateFieldHandler() {
@@ -90,53 +76,5 @@ public class BatteryInfo {
         return info;
     }
 
-    private static BroadcastReceiver broadcastReceiver = null;
 
-    private static JSONObject getBroadcastBatteryInfo(Context mContext) {
-
-        final JSONObject batteryInfo = new JSONObject();
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        intentFilter.addAction(Intent.ACTION_BATTERY_LOW);
-        intentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
-        intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
-        intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-
-        broadcastReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                Bundle bundle = intent.getExtras();
-                if (bundle == null) {
-                    return;
-                }
-
-                IReflectUtil.invokeMethod(bundle, "unparcel", new Class[]{}, new Object[]{});
-                Map<String, Object> mMap = (Map<String, Object>) IReflectUtil.getFieldValue(bundle, "mMap");
-                JSONObject bundleInfos = new JSONObject(mMap);
-                Log.d("DeviceInfo", "_set_debug_here_: battery");
-
-                if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
-
-                    try {
-                        batteryInfo.put("ACTION_BATTERY_CHANGED", bundleInfos);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    // 得到了我们要的了，释放掉这个 BroadcastReceiver 实例
-                    if (broadcastReceiver != null) {
-                        ManagerInfo.getApplication().unregisterReceiver(broadcastReceiver);
-                        broadcastReceiver = null;
-                    }
-
-                }
-
-            }
-        };
-
-        ManagerInfo.getApplication().registerReceiver(broadcastReceiver, intentFilter);
-
-        return batteryInfo;
-    }
 }
