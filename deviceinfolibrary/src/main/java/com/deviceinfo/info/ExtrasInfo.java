@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import common.modules.util.IActivityUtil;
 import common.modules.util.IReflectUtil;
 
 public class ExtrasInfo {
@@ -235,7 +236,7 @@ public class ExtrasInfo {
     }
 
     private static JSONObject getDisplayMetricsInfo() {
-        WindowManager windowManager = (WindowManager) ManagerInfo.getApplication().getSystemService(Context.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) IActivityUtil.getApplication().getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(outMetrics);
 

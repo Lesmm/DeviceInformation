@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import common.modules.util.IActivityUtil;
 import common.modules.util.IBundleUtil;
 import common.modules.util.IJSONObjectUtil;
 import common.modules.util.IReflectUtil;
@@ -56,7 +57,7 @@ public class BroadcastInfo {
 
     private static JSONObject getBroadcastInfo(Context mContext, String action) {
 
-        Context appCt = ManagerInfo.getApplication();
+        Context appCt = IActivityUtil.getApplication();
         final Context ct = appCt != null ? appCt : mContext;
 
         final JSONObject returnValueInfo = new JSONObject();

@@ -1,6 +1,5 @@
 package com.deviceinfo;
 
-import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
@@ -29,8 +28,6 @@ import com.deviceinfo.info.WindowManagerInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.lang.reflect.Method;
 
 public class ManagerInfo {
 
@@ -117,24 +114,6 @@ public class ManagerInfo {
         }
 
         return result;
-    }
-
-    public static android.app.Application getApplication() {
-        try {
-            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
-            // Object currentActivityThread = activityThreadClazz.getMethod("currentActivityThread").invoke(activityThreadClazz);
-            Method currentActivityThreadMethod = activityThreadClazz.getDeclaredMethod("currentActivityThread", new Class[]{});
-            currentActivityThreadMethod.setAccessible(true);
-            Object currentActivityThread = currentActivityThreadMethod.invoke(activityThreadClazz, new Object[]{});
-            // Application application = (Application)activityThreadClazz.getMethod("getApplication").invoke(currentActivityThread);
-            Method getApplicationMethod = activityThreadClazz.getDeclaredMethod("getApplication", new Class[]{});
-            getApplicationMethod.setAccessible(true);
-            Application application = (Application) getApplicationMethod.invoke(currentActivityThread, new Object[]{});
-            return application;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
 }

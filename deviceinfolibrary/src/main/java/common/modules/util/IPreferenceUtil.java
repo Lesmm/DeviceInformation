@@ -16,7 +16,7 @@ public class IPreferenceUtil {
 
     public static Context getContext() {
         if (mContext == null) {
-            mContext = ManagerInfo.getApplication();
+            mContext = IActivityUtil.getApplication();
         }
         return mContext;
     }

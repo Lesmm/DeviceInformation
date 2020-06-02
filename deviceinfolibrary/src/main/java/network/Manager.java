@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
+import common.modules.util.IActivityUtil;
 import common.modules.util.IFileUtil;
 import common.modules.util.IPreferenceUtil;
 import common.modules.util.IReflectUtil;
@@ -75,7 +76,7 @@ public class Manager {
     }
 
     public static JSONObject getInfo() {
-        return getInfo(ManagerInfo.getApplication());
+        return getInfo(IActivityUtil.getApplication());
     }
 
     public static JSONObject getInfo(Context mContext) {
