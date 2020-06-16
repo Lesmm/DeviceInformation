@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -137,11 +138,13 @@ public class WifiManagerInfo {
                     // public android.os.Messenger getWifiStateMachineMessenger() throws android.os.RemoteException;        // Android 4.4
                     // public android.net.wifi.WifiEapSimInfo getSimInfo() throws android.os.RemoteException;               // Android 5.1 特有的
 
-                    if (methodName.equals("getAggressiveHandover") || methodName.equals("getAllowScansWithTraffic") || methodName.equals("getEnableAutoJoinWhenAssociated") ||
-                            methodName.equals("getFrequencyBand") || methodName.equals("getHalBasedAutojoinOffload") || methodName.equals("getSupportedFeatures") ||
-                            methodName.equals("getVerboseLoggingLevel") || methodName.equals("getWifiEnabledState") || methodName.equals("getWifiApEnabledState") ||
-                            methodName.equals("getChannelList") || methodName.equals("getWifiServiceMessenger") || methodName.equals("reportActivityInfo") ||
-                            methodName.equals("getCurrentNetworkWpsNfcConfigurationToken") || methodName.equals("getPasspointConfigurations") || methodName.equals("getWifiStateMachineMessenger") ||
+                    if (methodName.equals("getAggressiveHandover") || methodName.equals("getAllowScansWithTraffic")
+                            || methodName.equals("getEnableAutoJoinWhenAssociated")
+                            || methodName.equals("getFrequencyBand") || methodName.equals("getHalBasedAutojoinOffload") || methodName.equals("getSupportedFeatures")
+                            || methodName.equals("getVerboseLoggingLevel") || methodName.equals("getWifiEnabledState") || methodName.equals("getWifiApEnabledState")
+                            || methodName.equals("getChannelList") || methodName.equals("getWifiServiceMessenger") || methodName.equals("reportActivityInfo")
+                            || methodName.equals("getCurrentNetworkWpsNfcConfigurationToken") || methodName.equals("getPasspointConfigurations")
+                            || methodName.equals("getWifiStateMachineMessenger") ||
                             methodName.equals("getSimInfo")) {
                         return null;
                     }
@@ -183,8 +186,9 @@ public class WifiManagerInfo {
                         JSONArray array = new JSONArray();
                         for (int i = 0; i < length; i++) {
                             WifiConfiguration configuration = (WifiConfiguration) onfiguredNetworks.get(i);
-                            Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(configuration, IArrayUtil.arrayToList(new String[]{"defaultGwMacAddress", "BSSID", "SSID", "preSharedKey",
-                                    "autoJoinBSSID", "creatorName", "lastUpdateName"}));
+                            Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(configuration, IArrayUtil.arrayToList(
+                                    new String[]{"defaultGwMacAddress", "BSSID", "SSID", "preSharedKey",
+                                            "autoJoinBSSID", "creatorName", "lastUpdateName"}));
                             if (map != null && map.size() != 0) {
                                 array.put(new JSONObjectExtended(map));
                             }
@@ -199,13 +203,20 @@ public class WifiManagerInfo {
                 // public android.net.wifi.WifiInfo getConnectionInfo(java.lang.String callingPackage) throws android.os.RemoteException;   // Android 8.1
 
                 // public java.util.List<android.net.wifi.ScanResult> getScanResults(java.lang.String callingPackage) throws android.os.RemoteException;
-                // public java.util.List<android.net.wifi.BatchedScanResult> getBatchedScanResults(java.lang.String callingPackage) throws android.os.RemoteException; // Android 7.1以上无此API了，不处理
+                // public java.util.List<android.net.wifi.BatchedScanResult> getBatchedScanResults(java.lang.String callingPackage) ...; // Android 7.1以上无此API了，不处理
                 if (parameterTypes.length == 1) {
 
                     if (parameterTypes[0] == String.class) {
 
                         if (methodName.equals("getConnectionInfo")) {
                             Object value = method.invoke(obj, new Object[]{callingPackage});
+
+                            // for ip address
+                            if (value instanceof android.net.wifi.WifiInfo) {
+                                android.net.wifi.WifiInfo wifiInfo = (android.net.wifi.WifiInfo) value;
+                                value = object2Json4WifiInfo(wifiInfo);
+                            }
+
                             return value;
                         }
 
@@ -222,8 +233,9 @@ public class WifiManagerInfo {
                             List results = new ArrayList();
                             for (int i = 0; list != null && i < list.size(); i++) {
                                 android.net.wifi.ScanResult scanResult = (android.net.wifi.ScanResult) list.get(i);
-                                Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(scanResult, IArrayUtil.arrayToList(new String[]{"BSSID", "SSID", "venueName", "level", "channelWidth",
-                                        "operatorFriendlyName", "wifiSsid"}));
+                                Map<?, ?> map = IReflectUtilWrapper.getFieldsValues(scanResult, IArrayUtil.arrayToList(
+                                        new String[]{"BSSID", "SSID", "venueName", "level",
+                                                "channelWidth", "operatorFriendlyName", "wifiSsid"}));
                                 results.add(map);
                             }
                             return results;
@@ -240,4 +252,22 @@ public class WifiManagerInfo {
 
     }
 
+    /**
+     * Some Object To Json
+     */
+    public static JSONObject object2Json4WifiInfo(android.net.wifi.WifiInfo wifiInfo) {
+        JSONObject json = new JSONObjectExtended().__objectToJson__(wifiInfo);
+
+        InetAddress mIpAddress = (InetAddress) IReflectUtil.getFieldValue(wifiInfo, "mIpAddress");
+        if (mIpAddress != null) {
+            JSONObject ip_address_json = new JSONObjectExtended().__objectToJson__(mIpAddress);
+            try {
+                json.put("mIpAddress", ip_address_json);
+                return json;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return json;
+    }
 }

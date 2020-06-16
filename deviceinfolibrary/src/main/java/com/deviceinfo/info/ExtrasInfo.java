@@ -14,9 +14,7 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.webkit.WebView;
 
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.JSONObjectExtended;
-import com.deviceinfo.ManagerInfo;
 
 import org.json.JSONObject;
 
@@ -247,7 +245,7 @@ public class ExtrasInfo {
         float xdpi = outMetrics.xdpi;
         float ydpi = outMetrics.ydpi;
 
-        JSONObject displayMetricsInfo = JSONObjectExtended.objectToJson(outMetrics);
+        JSONObject displayMetricsInfo = new JSONObjectExtended().__objectToJson__(outMetrics);
         return displayMetricsInfo;
     }
 

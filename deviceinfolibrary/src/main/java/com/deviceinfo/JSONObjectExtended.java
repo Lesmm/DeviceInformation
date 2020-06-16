@@ -5,9 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.BaseBundle;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -24,9 +22,28 @@ import common.modules.util.IReflectUtil;
 
 public class JSONObjectExtended extends JSONObject {
 
+    private static String __Class_Name__ = JSONObjectExtended.class.getSimpleName();
+
+    public int superClassDepth = 3; // for element is Object parse by __objectToJson__
+    public int recursiveDepth = 2;  // for element is Object parse by __objectToJson__
+
+    public JSONObjectExtended() {
+        super();
+    }
+
     public JSONObjectExtended(Map copyFrom) {
         super();
+        copyFrom(copyFrom);
+    }
 
+    public JSONObjectExtended(Map copyFrom, int superClassDepth, int recursiveDepth) {
+        super();
+        this.superClassDepth = superClassDepth;
+        this.recursiveDepth = recursiveDepth;
+        copyFrom(copyFrom);
+    }
+
+    public void copyFrom(Map copyFrom) {
         Map<String, Object> nameValuePairs = (Map<String, Object>) IReflectUtil.getFieldValue(this, "nameValuePairs");
 
         Map<?, ?> contentsTyped = (Map<?, ?>) copyFrom;
@@ -39,14 +56,14 @@ public class JSONObjectExtended extends JSONObject {
             if (key == null) {
                 throw new NullPointerException("key == null");
             }
-            Object value = wrap(entry.getValue());
+            Object value = __wrap__(entry.getValue());
             if (value != null) {
                 nameValuePairs.put(key, value);
             }
         }
     }
 
-    public static Object wrap(Object o) {
+    public Object __wrap__(Object o) {
         if (o == null) {
             return NULL;
         }
@@ -79,36 +96,41 @@ public class JSONObjectExtended extends JSONObject {
             if (o.getClass().isEnum()) {
                 return o.toString();
             }
-            return objectToJson(o);
+            return __objectToJson__(o);
         } catch (Exception ignored) {
-            Log.d("--JSONObjectExtended--", ignored.toString());
+            Log.d(__Class_Name__, "ignored -------------->>>");
             ignored.printStackTrace();
+            Log.d(__Class_Name__, "ignored --------------<<<");
         }
         return null;
     }
 
 
     /* Extend Methods */
-    public static JSONObject objectToJson(Object object) {
-        Map<?, ?> result = objectFieldNameValues(3, object);
+    public JSONObject __objectToJson__(Object object) {
+        return __method_objectToJson__(object, superClassDepth, recursiveDepth);
+    }
+
+    public JSONObject __method_objectToJson__(Object object, int superClassDepth, int recursiveDepth) {
+        Map<?, ?> result = objectFieldNameValues(superClassDepth, object);
 
         if (result == null) {
             return null;
         }
 
-        int recursiveDepth = 0;
+        int recursivelyDeep = 0;
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
         for (int i = 0; i < elements.length; i++) {
             StackTraceElement ele = elements[i];
             String traceDescription = ele.toString();
-            if (traceDescription.contains("JSONObjectExtended.objectToJson")) {
-                recursiveDepth++;
+            if (traceDescription.contains(__Class_Name__ + "." + "__method_objectToJson__")) {
+                recursivelyDeep++;
             }
         }
-        if (recursiveDepth >= 2) {
+        if (recursivelyDeep >= recursiveDepth) {
             return new JSONObject(result);
         } else {
-            return new JSONObjectExtended(result);
+            return new JSONObjectExtended(result, superClassDepth, recursiveDepth);
         }
     }
 

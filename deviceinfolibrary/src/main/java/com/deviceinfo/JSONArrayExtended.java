@@ -8,14 +8,23 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class JSONArrayExtended extends JSONArray {
 
     public JSONArrayExtended(Collection copyFrom) {
         super();
         if (copyFrom != null) {
-            for (Iterator it = copyFrom.iterator(); it.hasNext();) {
-                put(JSONObjectExtended.wrap(it.next()));
+            if (copyFrom instanceof List) {
+                // for keep the order
+                List list = (List)copyFrom;
+                for (int i = 0; i < list.size(); i++) {
+                    put(new JSONObjectExtended().__wrap__(list.get(i)));
+                }
+            } else {
+                for (Iterator it = copyFrom.iterator(); it.hasNext();) {
+                    put(new JSONObjectExtended().__wrap__(it.next()));
+                }
             }
         }
     }
@@ -38,7 +47,7 @@ public class JSONArrayExtended extends JSONArray {
         }
 
         for (int i = 0; i < length; ++i) {
-            put(JSONObjectExtended.wrap(Array.get(array, i)));
+            put(new JSONObjectExtended().__wrap__(Array.get(array, i)));
         }
     }
 }

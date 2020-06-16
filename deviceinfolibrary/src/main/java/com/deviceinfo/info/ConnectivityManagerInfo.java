@@ -2,19 +2,27 @@ package com.deviceinfo.info;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.IpPrefix;
+import android.net.LinkAddress;
 import android.net.Network;
 import android.net.NetworkInfo;
+import android.net.RouteInfo;
 import android.os.Build;
 import android.util.Log;
 
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
+import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +39,8 @@ public class ConnectivityManagerInfo {
 
         Map<?, ?> result = InvokerOfObject.invokeObjectMethods(proxy, new InvokerOfObject.InvokeHandler() {
             @Override
-            public Object handle(Object obj, Class<?> clazz, Method method, String methodName, Class<?>[] parameterTypes, Class<?> returnType, Map<String, Object> resultMap) throws Exception {
+            public Object handle(Object obj, Class<?> clazz, Method method, String methodName, Class<?>[] parameterTypes,
+                                 Class<?> returnType, Map<String, Object> resultMap) throws Exception {
                 if (returnType == void.class) {
                     return null;
                 }
@@ -87,6 +96,11 @@ public class ConnectivityManagerInfo {
                         Log.d("DeviceInfo", "Debug method: " + methodName);
                     }
                     Object value = method.invoke(Modifier.isStatic(method.getModifiers()) ? clazz : obj, new Object[]{});
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        if (value instanceof android.net.LinkProperties) {
+                            value = object2Json4LinkProperties((android.net.LinkProperties) value);
+                        }
+                    }
                     return value;
                 }
 
@@ -99,13 +113,16 @@ public class ConnectivityManagerInfo {
                     // TODO ... 这个Json Hook了会不会APP有问题，看情况把这个Json Key去掉即不Hook，现在先取这些信息回来先(发现所有支持的NetworkInfo都是true)
                     // public boolean isNetworkSupported(int networkType) throws android.os.RemoteException;
 
-                    // TODO ... 这两个方法看能不能从 getAllNetworkInfo() & getAllNetworks() 里简化即: NetworkInfo & Network 信息的根据 getAllNetworkInfo() & getAllNetworks() 的值来返回!
+                    // TODO ... 这两个方法看能不能从 getAllNetworkInfo() & getAllNetworks() 里简化
+                    // TODO ... 即: NetworkInfo & Network 信息的根据 getAllNetworkInfo() & getAllNetworks() 的值来返回!
                     // public android.net.NetworkInfo getNetworkInfo(int networkType) throws android.os.RemoteException;
                     // public android.net.Network getNetworkForType(int networkType) throws android.os.RemoteException;
 
                     if (parameterTypes[0] == int.class) {
 
-                        if (methodName.equals("getLinkPropertiesForType") || methodName.equals("getRestoreDefaultNetworkDelay") || methodName.equals("isNetworkSupported")
+                        if (methodName.equals("getLinkPropertiesForType")
+                                || methodName.equals("getRestoreDefaultNetworkDelay")
+                                || methodName.equals("isNetworkSupported")
                                 || methodName.equals("getNetworkInfo") || methodName.equals("getNetworkForType")) {
                             iterateAllNetworkInfoList(mContext, new IterateNetworkInfoHandler() {
                                 @Override
@@ -122,6 +139,13 @@ public class ConnectivityManagerInfo {
                                     String key = "_arg0_int_" + mNetworkType;
                                     Object value = fMethod.invoke(fObj, new Object[]{mNetworkType});
                                     if (value != null) {
+
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            if (value instanceof android.net.LinkProperties) {
+                                                value = object2Json4LinkProperties((android.net.LinkProperties) value);
+                                            }
+                                        }
+
                                         methodArgsMap.put(key, value);
                                     }
 
@@ -147,7 +171,9 @@ public class ConnectivityManagerInfo {
                     if (parameterTypes[0].getName().equals("android.net.Network")) {
                         // if ( parameterTypes[0] == android.net.Network.class ) {
 
-                        if (methodName.equals("getLinkProperties") || methodName.equals("getNetworkCapabilities") || methodName.equals("getNetworkInfoForNetwork")) {
+                        if (methodName.equals("getLinkProperties")
+                                || methodName.equals("getNetworkCapabilities")
+                                || methodName.equals("getNetworkInfoForNetwork")) {
                             iterateAllNetworkList(mContext, new IterateNetworkHandler() {
                                 @Override
                                 public void handle(Network network) throws Exception {
@@ -163,6 +189,13 @@ public class ConnectivityManagerInfo {
                                     String key = "_arg0_Network_" + netId;
                                     Object value = fMethod.invoke(fObj, new Object[]{network});
                                     if (value != null) {
+
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            if (value instanceof android.net.LinkProperties) {
+                                                value = object2Json4LinkProperties((android.net.LinkProperties) value);
+                                            }
+                                        }
+
                                         methodArgsMap.put(key, value);
                                     }
 
@@ -229,5 +262,83 @@ public class ConnectivityManagerInfo {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    /**
+     * Some Object To Json
+     */
+    public static JSONObject object2Json4LinkProperties(android.net.LinkProperties linkProperties) {
+        JSONObject json = new JSONObjectExtended().__objectToJson__(linkProperties);
+
+        // for InetAddress getting holder fields-values json
+        JSONArray mLinkAddressesJson = new JSONArray();
+        ArrayList<LinkAddress> mLinkAddresses = (ArrayList<LinkAddress>) IReflectUtil.getFieldValue(linkProperties, "mLinkAddresses");
+        for (int i = 0; i < mLinkAddresses.size(); i++) {
+            LinkAddress linkAddress = mLinkAddresses.get(i);
+            JSONObject js = new JSONObjectExtended().__objectToJson__(linkAddress);
+            mLinkAddressesJson.put(js);
+
+            InetAddress address = (InetAddress) IReflectUtil.getFieldValue(linkAddress, "address");
+            if (address != null) {
+                JSONObject inetJson = new JSONObjectExtended().__objectToJson__(address);
+                try {
+                    js.put("address", inetJson);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // for InetAddress getting holder fields-values json
+        JSONArray mRoutesJson = new JSONArray();
+        ArrayList<RouteInfo> mRoutes = (ArrayList<RouteInfo>) IReflectUtil.getFieldValue(linkProperties, "mRoutes");
+        for (int i = 0; i < mRoutes.size(); i++) {
+            RouteInfo routeInfo = mRoutes.get(i);
+            JSONObject js = new JSONObjectExtended().__objectToJson__(routeInfo);
+            mRoutesJson.put(js);
+
+            InetAddress mGateway = (InetAddress) IReflectUtil.getFieldValue(routeInfo, "mGateway");
+            if (mGateway != null) {
+                JSONObject inetJson = new JSONObjectExtended().__objectToJson__(mGateway);
+                try {
+                    js.put("mGateway", inetJson);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                IpPrefix mDestination = (IpPrefix) IReflectUtil.getFieldValue(routeInfo, "mDestination");
+                if (mDestination != null) {
+                    JSONObject elementInfo = new JSONObjectExtended().__objectToJson__(mDestination);
+                    try {
+                        js.put("mDestination", elementInfo);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+
+        ArrayList<InetAddress> mDnses = (ArrayList<InetAddress>) IReflectUtil.getFieldValue(linkProperties, "mDnses");
+        JSONArray mDnsesJson = new JSONArrayExtended(mDnses);
+
+        ArrayList<InetAddress> mPcscfs = (ArrayList<InetAddress>) IReflectUtil.getFieldValue(linkProperties, "mPcscfs");
+        JSONArray mPcscfsJson = new JSONArrayExtended(mPcscfs);
+
+        ArrayList<InetAddress> mValidatedPrivateDnses = (ArrayList<InetAddress>) IReflectUtil.getFieldValue(linkProperties, "mValidatedPrivateDnses");
+        JSONArray mValidatedPrivateDnsesJson = new JSONArrayExtended(mValidatedPrivateDnses);
+
+        try {
+            json.put("mLinkAddresses", mLinkAddressesJson);
+            json.put("mRoutes", mRoutesJson);
+            json.put("mDnses", mDnsesJson);
+            json.put("mPcscfsJson", mPcscfsJson);
+            json.put("mValidatedPrivateDnses", mValidatedPrivateDnsesJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json;
     }
 }

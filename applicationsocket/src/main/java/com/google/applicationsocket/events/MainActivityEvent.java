@@ -20,6 +20,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Set;
 
+import common.modules.util.IActivityUtil;
+
 public class MainActivityEvent {
 
     private MainActivity activity;
@@ -49,7 +51,7 @@ public class MainActivityEvent {
                 Message.obtain(activity.acceptingStatusHandler, 0, "正在获取信息...\n").sendToTarget();
 
 
-                JSONObject jsonObject = ManagerInfo.getInfo(ManagerInfo.getApplication());
+                JSONObject jsonObject = ManagerInfo.getInfo(IActivityUtil.getApplication());
                 String contents = jsonObject.toString();
                 // IFileUtil.writeTextToFile(contents, "/sdcard/phoneInfo.json");
                 Message.obtain(activity.acceptingStatusHandler, 0, "正在发送信息...\n").sendToTarget();

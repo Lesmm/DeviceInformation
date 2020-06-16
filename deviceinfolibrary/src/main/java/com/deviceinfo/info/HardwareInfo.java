@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Debug;
 import android.util.Log;
 
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
 import com.deviceinfo.ManagerInfo;
@@ -17,7 +16,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.lang.reflect.Array;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,14 +36,14 @@ public class HardwareInfo {
                 // TODO ... Hook 那边 处理一下 activity service 的 getMemoryInfo 的 "totalMem" 值(bytes)，要与 "/proc/meminfo" 的 MemTotal: XXX kB 要一致。注意单位！
                 ActivityManager.MemoryInfo amMemoryInfo = new ActivityManager.MemoryInfo();
                 am.getMemoryInfo(amMemoryInfo);
-                JSONObject amMemoryInfoJson = JSONObjectExtended.objectToJson(amMemoryInfo);
+                JSONObject amMemoryInfoJson = new JSONObjectExtended().__objectToJson__(amMemoryInfo);
 
                 ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
                 am.getMyMemoryState(appProcessInfo);
-                JSONObject amAppProcessInfoJson = JSONObjectExtended.objectToJson(appProcessInfo);
+                JSONObject amAppProcessInfoJson = new JSONObjectExtended().__objectToJson__(appProcessInfo);
 
                 ConfigurationInfo configurationInfo = am.getDeviceConfigurationInfo();
-                JSONObject amConfigurationInfoJson = JSONObjectExtended.objectToJson(configurationInfo);
+                JSONObject amConfigurationInfoJson = new JSONObjectExtended().__objectToJson__(configurationInfo);
 
                 Debug.MemoryInfo[] amDebugMemoryInfos = am.getProcessMemoryInfo(new int[]{android.os.Process.myPid()});
                 JSONArray amDebugMemoryInfoArray = new JSONArrayExtended(amDebugMemoryInfos);
