@@ -123,7 +123,8 @@ public class ConnectivityManagerInfo {
                         if (methodName.equals("getLinkPropertiesForType")
                                 || methodName.equals("getRestoreDefaultNetworkDelay")
                                 || methodName.equals("isNetworkSupported")
-                                || methodName.equals("getNetworkInfo") || methodName.equals("getNetworkForType")) {
+                                || methodName.equals("getNetworkInfo")
+                                || methodName.equals("getNetworkForType")) {
                             iterateAllNetworkInfoList(mContext, new IterateNetworkInfoHandler() {
                                 @Override
                                 public void handle(NetworkInfo info) throws Exception {
