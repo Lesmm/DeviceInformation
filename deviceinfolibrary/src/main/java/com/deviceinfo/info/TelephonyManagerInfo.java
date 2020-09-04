@@ -37,7 +37,7 @@ public class TelephonyManagerInfo {
             Map managerMap = InvokerOfObject.invokeObjectMethodsWithGetPrefixZeroArgs(telephonyManager);
             JSONObject managerInfo = new JSONObjectExtended(managerMap);
 
-            // 2. 移除掉一些无用的
+            // 2. 移除掉一些无用的WIFI_SERVICE
             managerInfo.remove("getITelephony");
             managerInfo.remove("getCarrierConfig"); // TODO ... 里面信息有没有标识设备的信息，有空再看
             managerInfo.remove("getPhoneCount");
