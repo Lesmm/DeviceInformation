@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.StatFs;
@@ -35,6 +36,13 @@ public class ExtrasInfo {
 
     public static JSONObject getInfo(Context mContext) {
         JSONObject info = new JSONObject();
+
+        try {
+            info.put("VERSION.SDK_INT", Build.VERSION.SDK_INT);
+            info.put("VERSION.RELEASE", Build.VERSION.RELEASE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // 宿主App的信息，记录一下
         try {
