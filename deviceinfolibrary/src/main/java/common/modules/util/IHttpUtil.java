@@ -9,8 +9,13 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Set;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 public class IHttpUtil {
 
@@ -18,21 +23,21 @@ public class IHttpUtil {
         void handle(JSONObject json);
     }
 
-    public static void postAsync(String urlStr, Map<String, Object> headers, String bodyString, JsonCallback jsonCallback) {
+    public static void post(boolean isAsync, String urlStr, Map<String, Object> headers, String bodyString, JsonCallback jsonCallback) {
         try {
-            postAsync(urlStr, headers, bodyString.getBytes("UTF-8"), jsonCallback);
+            post(isAsync, urlStr, headers, bodyString.getBytes("UTF-8"), jsonCallback);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
-    public static void postAsync(final String urlStr, final Map<String, Object> headers, final byte[] bodyBytes, final JsonCallback jsonCallback) {
-        new Thread(new Runnable() {
+    public static void post(boolean isAsync, final String urlStr, final Map<String, Object> headers, final byte[] bodyBytes, final JsonCallback jsonCallback) {
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                byte[] responseData = post(urlStr, headers, bodyBytes, null);
                 JSONObject responseJson = null;
                 try {
+                    byte[] responseData = __post__(urlStr, headers, bodyBytes, null);
                     if (responseData != null) {
                         responseJson = new JSONObject(new String(responseData));
                     }
@@ -50,7 +55,12 @@ public class IHttpUtil {
                     }
                 }
             }
-        }).start();
+        };
+        if (isAsync) {
+            new Thread(runnable).start();
+        } else {
+            runnable.run();
+        }
     }
 
     // For get & post
@@ -58,19 +68,27 @@ public class IHttpUtil {
         void callback(Exception exception, HttpURLConnection connection, int responseCode, byte[] responseData);
     }
 
-    public static byte[] post(String url, Map<String, Object> headers, byte[] postBodyBytes, RequestCallback responseHandler) {
+    public static byte[] __post__(String urlStr, Map<String, Object> headers, byte[] postBodyBytes, RequestCallback responseHandler) {
 
         HttpURLConnection conn = null;
 
         try {
 
-            URL urlObj = new URL(url);
+            URL urlObj = new URL(urlStr);
             long postDataLength = postBodyBytes.length;
 
             conn = (HttpURLConnection) urlObj.openConnection();
+
+            if (urlStr.startsWith("https")) {
+                SSLContext sslcontext = SSLContext.getInstance("SSL");
+                sslcontext.init(null, new TrustManager[]{new HttpsWorker.TrustAnyTrustManager()}, new SecureRandom());
+                ((HttpsURLConnection) conn).setSSLSocketFactory(sslcontext.getSocketFactory());
+                ((HttpsURLConnection) conn).setHostnameVerifier(new HttpsWorker.TrustAnyHostnameVerifier());
+            }
+
             conn.setRequestMethod("POST");
             conn.setConnectTimeout(2 * 60 * 1000);
-            conn.setReadTimeout(2* 60 * 1000);
+            conn.setReadTimeout(2 * 60 * 1000);
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Content-Length", String.valueOf(postDataLength));
 
@@ -151,8 +169,15 @@ public class IHttpUtil {
             URL url = new URL(urlStr);
 
             conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
 
+            if (urlStr.startsWith("https")) {
+                SSLContext sslcontext = SSLContext.getInstance("SSL");
+                sslcontext.init(null, new TrustManager[]{new HttpsWorker.TrustAnyTrustManager()}, new SecureRandom());
+                ((HttpsURLConnection) conn).setSSLSocketFactory(sslcontext.getSocketFactory());
+                ((HttpsURLConnection) conn).setHostnameVerifier(new HttpsWorker.TrustAnyHostnameVerifier());
+            }
+
+            conn.setRequestMethod("GET");
             conn.setConnectTimeout(60 * 1000);
             conn.setReadTimeout(60 * 1000);
 

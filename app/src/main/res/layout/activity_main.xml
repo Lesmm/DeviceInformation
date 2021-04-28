@@ -38,4 +38,16 @@
         android:text="SubscriberId"
         android:textColor="@color/black" />
 
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/subscriberIdTextView"
+        android:layout_centerHorizontal="true"
+
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@color/gray" />
+
 </RelativeLayout>

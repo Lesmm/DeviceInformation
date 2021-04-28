@@ -6,6 +6,8 @@ import android.os.Build;
 import android.os.Message;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
 import com.deviceinfo.ManagerInfo;
 import com.google.applicationsocket.MainActivity;
 import com.google.applicationsocket.utils.IpScanner;
@@ -157,7 +159,7 @@ public class MainActivityEvent {
             }
             if (!isAllGranted) {
                 String[] permissionsAskToGrant = getPermissionWeAskToGrant();
-                android.support.v4.app.ActivityCompat.requestPermissions(activity, permissionsAskToGrant, 1000);
+                ActivityCompat.requestPermissions(activity, permissionsAskToGrant, 1000);
                 return false;
             } else {
                 return true;

@@ -1,5 +1,7 @@
-package network;
+package com.facade.network;
 
+
+import com.facade.Manager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -7,9 +9,16 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+import common.modules.util.HttpsWorker;
 
 public class IHttpGetter {
 
@@ -23,6 +32,7 @@ public class IHttpGetter {
 
     public interface DownloadPhaseHandler {
         void onStart(String temporaryFileName);
+
         void onOver(String temporaryFileName);
     }
 
@@ -39,8 +49,15 @@ public class IHttpGetter {
             URL url = new URL(urlStr);
 
             conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
 
+            if (urlStr.startsWith("https")) {
+                SSLContext sslcontext = SSLContext.getInstance("SSL");
+                sslcontext.init(null, new TrustManager[]{new HttpsWorker.TrustAnyTrustManager()}, new SecureRandom());
+                ((HttpsURLConnection) conn).setSSLSocketFactory(sslcontext.getSocketFactory());
+                ((HttpsURLConnection) conn).setHostnameVerifier(new HttpsWorker.TrustAnyHostnameVerifier());
+            }
+
+            conn.setRequestMethod("GET");
             conn.setConnectTimeout(60 * 1000);
             conn.setReadTimeout(60 * 1000);
 
@@ -57,8 +74,8 @@ public class IHttpGetter {
             InputStream inputStream = conn.getInputStream();
 
             // 避免内存不足，写文件
-            String downloadCacheDirecotry = Manager.getApplication().getCacheDir().getAbsolutePath();
-            String downloadTempFilePath = downloadCacheDirecotry + "/" + UUID.randomUUID().toString();
+            String cacheDirectory = Manager.getApplication().getCacheDir().getAbsolutePath() + "/";
+            String downloadTempFilePath = cacheDirectory + UUID.randomUUID().toString();
             needDeleteDownloadCacheFile = downloadTempFilePath;
             FileOutputStream outputStream = new FileOutputStream(downloadTempFilePath);
 
@@ -111,8 +128,15 @@ public class IHttpGetter {
             URL url = new URL(urlStr);
 
             conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
 
+            if (urlStr.startsWith("https")) {
+                SSLContext sslcontext = SSLContext.getInstance("SSL");
+                sslcontext.init(null, new TrustManager[]{new HttpsWorker.TrustAnyTrustManager()}, new SecureRandom());
+                ((HttpsURLConnection) conn).setSSLSocketFactory(sslcontext.getSocketFactory());
+                ((HttpsURLConnection) conn).setHostnameVerifier(new HttpsWorker.TrustAnyHostnameVerifier());
+            }
+
+            conn.setRequestMethod("GET");
             conn.setConnectTimeout(60 * 1000);
             conn.setReadTimeout(60 * 1000);
 

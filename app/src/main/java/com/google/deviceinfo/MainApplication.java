@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 
 public class MainApplication extends Application {
 
@@ -20,6 +21,16 @@ public class MainApplication extends Application {
         super.onCreate();
         instance = this;
         appContext = instance.getApplicationContext();
+
+        // 未捕捉异常
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable e) {
+                Log.d("DeviceInfo", "-------------- uncaughtException --------------");
+                e.printStackTrace();
+                Log.d("DeviceInfo", "-------------- uncaughtException --------------");
+            }
+        });
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override

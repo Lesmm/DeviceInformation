@@ -1,9 +1,13 @@
 package com.deviceinfo.info;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
@@ -15,41 +19,84 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.webkit.WebView;
 
+import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
+import com.facade.Manager;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import common.modules.util.IActivityUtil;
+import common.modules.util.IBundleUtil;
+import common.modules.util.IJSONObjectUtil;
 import common.modules.util.IReflectUtil;
 
 public class ExtrasInfo {
 
     public static JSONObject getInfo(Context mContext) {
+        try {
+            return __getInfo__(mContext);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new JSONObject();
+    }
+
+    public static JSONObject __getInfo__(Context mContext) {
         JSONObject info = new JSONObject();
 
+        // Build 信息
         try {
-            info.put("VERSION.SDK_INT", Build.VERSION.SDK_INT);
-            info.put("VERSION.RELEASE", Build.VERSION.RELEASE);
+            IJSONObjectUtil.putJSONObject(info, "VERSION.SDK_INT", Build.VERSION.SDK_INT);
+            IJSONObjectUtil.putJSONObject(info, "VERSION.RELEASE", Build.VERSION.RELEASE);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         // 宿主App的信息，记录一下
         try {
-            String packageName = mContext.getPackageName();
-            String grabDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date());
-            info.put("Captor.PackageName", packageName);
-            info.put("Captor.Date", grabDate);
+            JSONObject captorJson = new JSONObject();
+            IJSONObjectUtil.putJSONObject(info, "Captor", captorJson);
+            IJSONObjectUtil.putJSONObject(captorJson, "PackageName", mContext.getPackageName());
+            IJSONObjectUtil.putJSONObject(captorJson, "Uid", android.os.Process.myUid());
+            IJSONObjectUtil.putJSONObject(captorJson, "Version", Manager.VERSION);
+            IJSONObjectUtil.putJSONObject(captorJson, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date()));
+            TimeZone timeZone = Calendar.getInstance().getTimeZone();
+            String timeZoneName = timeZone.getDisplayName(false, TimeZone.SHORT);
+            String timeZoneID = timeZone.getID();
+            IJSONObjectUtil.putJSONObject(captorJson, "Zone.name", timeZoneName);
+            IJSONObjectUtil.putJSONObject(captorJson, "Zone.id", timeZoneID);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                String[] permissions = new String[]{
+                        Manifest.permission.READ_PHONE_STATE,
+
+                        Manifest.permission.ACCESS_WIFI_STATE,
+                        Manifest.permission.CHANGE_WIFI_STATE,
+
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                };
+                for (int i = 0; i < permissions.length; i++) {
+                    String p = permissions[i];
+                    boolean isGranted = Manager.getApplication().checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED;
+                    IJSONObjectUtil.putJSONObject(captorJson, p, isGranted);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,7 +138,7 @@ public class ExtrasInfo {
 
         // 4. 可用核数
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        int coreCount = new File("/sys/devices/system/cpu/").listFiles(new FileFilter(){
+        int coreCount = new File("/sys/devices/system/cpu/").listFiles(new FileFilter() {
             public final boolean accept(File file) {
                 if (Pattern.matches("cpu[0-9]", file.getName())) {
                     return true;
@@ -113,7 +160,9 @@ public class ExtrasInfo {
             if (location != null) {
                 info.put("Location.longitude", location.getLongitude());
                 info.put("Location.latitude", location.getLatitude());
-                info.put("Location.location", IReflectUtil.objectFieldNameValues(location));
+                Map<String, Object> map = (Map<String, Object>) IReflectUtil.objectFieldNameValues(location);
+                map.put("mExtras", IBundleUtil.createJSONFromBundle(location.getExtras()));
+                info.put("Location.location", new JSONObject(map));
             }
         } catch (SecurityException e) {
             e.printStackTrace();
@@ -121,7 +170,17 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
-        // 6. 系统信息 uname
+        // 6. Wifi 扫描列表信息
+        try {
+            WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
+            List<ScanResult> scanResults = wifiManager.getScanResults();
+            JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
+            IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 系统信息 uname
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             StructUtsname uname = Os.uname();
 
@@ -138,7 +197,7 @@ public class ExtrasInfo {
             }
         }
 
-        // 7. 内存信息
+        // 内存信息
         ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo amMemoryInfo = new ActivityManager.MemoryInfo();
         am.getMemoryInfo(amMemoryInfo);

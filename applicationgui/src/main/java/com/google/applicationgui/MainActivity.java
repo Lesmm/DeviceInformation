@@ -8,16 +8,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+
 import com.google.applicationgui.view.LoadingView;
 
-import network.Manager;
+import org.json.JSONObject;
+
+import com.facade.Manager;
 
 public class MainActivity extends Activity {
 
@@ -77,7 +81,7 @@ public class MainActivity extends Activity {
                     || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
             ) {
-                android.support.v4.app.ActivityCompat.requestPermissions(this, new String[]{
+                ActivityCompat.requestPermissions(this, new String[]{
                         Manifest.permission.INTERNET,
 
                         Manifest.permission.READ_PHONE_STATE,
@@ -172,7 +176,7 @@ public class MainActivity extends Activity {
 
         Manager.grabInfoAsync(new Manager.GrabInfoAsyncCallback() {
             @Override
-            public void done() {
+            public void done(JSONObject info) {
 
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {

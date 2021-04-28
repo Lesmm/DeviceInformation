@@ -246,6 +246,31 @@ public class IJSONObjectUtil {
 		}
 	}
 
+	public static void putJSONObject(JSONObject json, String key, Object value) {
+		if (json == null) {
+			return;
+		}
+		try {
+			json.put(key, value);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void put(JSONObject json, Object... keysValues) {
+		if (json == null) {
+			return;
+		}
+		for (int i = 0; keysValues != null && i < keysValues.length; i = i + 2) {
+			String key = (String) keysValues[i];
+			Object value = (i + 1) < keysValues.length ? keysValues[i + 1] : null;
+			try {
+				json.put(key, value);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	public static void putAll(JSONObject TO, JSONObject FROM) {
 		java.util.Iterator<String> iterator = FROM.keys();

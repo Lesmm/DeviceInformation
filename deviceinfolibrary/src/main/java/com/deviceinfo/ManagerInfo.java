@@ -18,6 +18,7 @@ import com.deviceinfo.info.MediaInfo;
 import com.deviceinfo.info.PackageManagerInfo;
 import com.deviceinfo.info.SensorsInfo;
 import com.deviceinfo.info.SettingsInfo;
+import com.deviceinfo.info.StatInfo;
 import com.deviceinfo.info.SubscriptionManagerInfo;
 import com.deviceinfo.info.SystemInfo;
 import com.deviceinfo.info.SystemPropertiesInfo;
@@ -29,12 +30,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import me.weishu.reflection.Reflection;
+import com.facade.Manager;
+
 public class ManagerInfo {
 
-    public static Boolean _IS_DEBUG_ = true;
+    public static Boolean _IS_DEBUG_ = false;
 
     public static JSONObject getInfo(Context mContext) {
         JSONObject result = new JSONObject();
+
+        try {
+            Reflection.unseal(Manager.getApplication().getBaseContext());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         try {
 
@@ -104,8 +114,12 @@ public class ManagerInfo {
             JSONObject mediaInfo = MediaInfo.getInfo(mContext);
             result.put("Media", mediaInfo);
 
+            // Extras Info
             JSONObject extrasInfo = ExtrasInfo.getInfo(mContext);
             result.put("Extras", extrasInfo);
+
+            // Putted in packageInfo
+            JSONObject packageStatInfo = StatInfo.getPackageSizeStatInfo(mContext, packageInfo);
 
             Log.d("DeviceInfo", "_set_debug_here_");
 
