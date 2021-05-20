@@ -170,7 +170,8 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
-        // 6. Wifi 扫描列表信息
+        // 6. Wifi 扫描列表信息. 2021.05.20 外边高层API也再扫了一遍，这里就不扫了
+        /**
         try {
             WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
             List<ScanResult> scanResults = wifiManager.getScanResults();
@@ -179,6 +180,7 @@ public class ExtrasInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+         **/
 
         // 系统信息 uname
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {

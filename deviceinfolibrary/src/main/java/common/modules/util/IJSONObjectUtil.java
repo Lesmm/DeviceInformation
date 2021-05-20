@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class IJSONObjectUtil {
 		}
 		return levelString.toString();
 	}
-	
+
 	// put replaceJson element to source with the same structure, like merge but with depth
 	public static void replaceJsonElementsValues(JSONObject sourceJson, JSONObject replaceJson) {
 		if (sourceJson == null || replaceJson == null) {
@@ -64,43 +65,36 @@ public class IJSONObjectUtil {
 		}
 
 		Iterator<?> keys = replaceJson.keys();
+
 		while (keys.hasNext()) {
-
 			try {
+				String replaceKey = (String) keys.next();
+				Object elementReplace = replaceJson.opt(replaceKey);
+				Object elementSource = sourceJson.opt(replaceKey);
 
-				String key = (String) keys.next();
-				Object elementReplace = replaceJson.opt(key);
-				Object elementSource = sourceJson.opt(key);
-
-				if (elementSource != null) {
-
-					if ((elementSource instanceof JSONObject) && (elementReplace instanceof JSONObject)) {
-						JSONObject sourceElementJson = (JSONObject) elementSource;
-						JSONObject replaceElementJson = (JSONObject) elementReplace;
-
-						replaceJsonElementsValues(sourceElementJson, replaceElementJson);
-						continue;
-					}
-
+				if ((elementSource instanceof JSONObject) && (elementReplace instanceof JSONObject)) {
+					IJSONObjectUtil.replaceJsonElementsValues((JSONObject) elementSource, (JSONObject) elementReplace);
+				} else if ((elementSource instanceof JSONArray) && (elementReplace instanceof JSONArray)) {
+					IJSONArrayUtil.replaceJsonElementsValues((JSONArray) elementSource, (JSONArray) elementReplace);
 				} else {
-					
-					if (key.startsWith("delete-")) {
-						String needDeleteKey = key.replaceFirst("delete-", "");
-						sourceJson.remove(needDeleteKey);
-						continue;
+					if (replaceKey.startsWith("delete-")) {
+						String deleteKey = replaceKey.replaceFirst("delete-", "");
+						if (sourceJson.has(deleteKey)) {
+							sourceJson.remove(deleteKey);
+						}
+						if (replaceJson.has(deleteKey)) {
+							sourceJson.put(deleteKey, replaceJson.opt(deleteKey));
+						}
+					} else {
+						// replace or add
+						sourceJson.put(replaceKey, elementReplace);
 					}
-					
 				}
-
-				// replace or add
-				sourceJson.put(key, elementReplace);
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		}
-
 	}
 	
 	/*
@@ -244,6 +238,24 @@ public class IJSONObjectUtil {
 
 			}
 		}
+	}
+
+	public static HashMap<String, Object> jsonToMap(JSONObject json) {
+		HashMap<String, Object> result = new HashMap<String, Object>();
+		Iterator<?> iterator = json != null ? json.keys() : null;
+		while (json != null && iterator != null && iterator.hasNext()) {
+			String key = (String) iterator.next();
+			Object value = json.opt(key);
+
+			if (value instanceof JSONObject) {
+				value = jsonToMap((JSONObject) value);
+			} else if (value instanceof JSONArray) {
+				value = IJSONArrayUtil.jsonToList((JSONArray) value);
+			}
+
+			result.put(key, value);
+		}
+		return result;
 	}
 
 	public static void putJSONObject(JSONObject json, String key, Object value) {

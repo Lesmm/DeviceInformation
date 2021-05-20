@@ -15,7 +15,8 @@ public abstract class HiBase {
     protected abstract JSONObject getInfo(Context mContext);
 
     public void __put_2_map__(Map<String, Object> map, Object value, String highMethodName) {
-        String realApiName = keysMappings().optString(highMethodName, highMethodName);
+        JSONObject mappings = keysMappings();
+        String realApiName = mappings != null ? mappings.optString(highMethodName, highMethodName) : highMethodName;
         map.put(realApiName, value);
     }
 

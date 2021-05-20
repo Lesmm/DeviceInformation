@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.telephony.CellInfo;
+import android.telephony.CellLocation;
 import android.telephony.TelephonyManager;
 
 import com.deviceinfo.JSONObjectExtended;
@@ -20,11 +21,19 @@ public class HiTelephonyManager extends HiBase {
 
     @Override
     public JSONObject getInfo(Context mContext) {
-        JSONObject results = new JSONObject();
+        try {
+            Map<String, Object> map = __getInfo__(mContext);
+            return new JSONObjectExtended(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new JSONObject();
+    }
 
+    public Map<String, Object> __getInfo__(Context mContext) {
         final TelephonyManager manager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
         if (manager == null) {
-            return results;
+            return null;
         }
 
         final Map<String, Object> map = new HashMap<>();
@@ -38,8 +47,10 @@ public class HiTelephonyManager extends HiBase {
             }
         });
 
+        CellLocation cellLocation = manager.getCellLocation();
+        __put_2_map__(map, cellLocation, "getCellLocation");
 
-        return new JSONObjectExtended(map);
+        return map;
     }
 
     @Override
@@ -47,6 +58,7 @@ public class HiTelephonyManager extends HiBase {
         JSONObject mapping = new JSONObject();
 
         IJSONObjectUtil.putJSONObject(mapping, "getAllCellInfo", "getAllCellInfo");
+        IJSONObjectUtil.putJSONObject(mapping, "getCellLocation", "getCellLocation");
 
         return mapping;
     }

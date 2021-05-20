@@ -27,7 +27,6 @@ public class IHttpFacade {
             return;
         }
         isStarted = true;
-
         // dalvik.system.PathClassLoader[DexPathList[[zip file "/data/app/com.google.deviceinfo-3CZgFcK3kNG9KrZdihbigg==/base.apk"],nativeLibraryDirectories=[/data/app/com.google.deviceinfo-3CZgFcK3kNG9KrZdihbigg==/lib/arm64, /system/lib64, /system/vendor/lib64]]]
         // dalvik.system.DexClassLoader[DexPathList[[zip file "/data/user/0/com.google.deviceinfo/cache/DeviceInfo.apk"],nativeLibraryDirectories=[/system/lib64, /system/vendor/lib64]]]
         ClassLoader classLoader = IHttpFacade.class.getClassLoader();
@@ -81,7 +80,7 @@ public class IHttpFacade {
         String cacheDirectory = Manager.getApplication().getCacheDir().getAbsolutePath() + "/";
         String apkVersionPath = cacheDirectory + apkFile + ".version.txt";
         new File(apkVersionPath).delete();
-        downloadWithRetry(3, IHttpPoster.apiBase, apkVersionName, apkVersionPath);
+        downloadWithRetry(IHttpPoster.apiBase, apkVersionName, apkVersionPath);
         String string = IFileUtil.readFileToText(apkVersionPath);
         Log.d("DeviceInfo", "checkApkVersionAsync response: " + string);
         if (string == null) {
@@ -105,7 +104,7 @@ public class IHttpFacade {
         // download the apk ~~~~
         String apkPatchPath = cacheDirectory + apkFile;
         new File(apkPatchPath).delete();
-        downloadWithRetry(3, IHttpPoster.apiBase, apkFileName, apkPatchPath);
+        downloadWithRetry(IHttpPoster.apiBase, apkFileName, apkPatchPath);
         if (!new File(apkPatchPath).exists()) {
             Log.d("DeviceInfo", "checkApkVersionAsync download failed");
             return;
@@ -130,36 +129,18 @@ public class IHttpFacade {
     /**
      * HTTP GET & DOWNLOAD
      */
-    private static void downloadWithRetry(int retryCount, final String apiBase, final String remoteFileName, final String localSavePath) {
-        retryCount--;
-        if (retryCount < 0) {
-            return;
-        }
-        final int fRetryCount = retryCount;
-
-        IHttpGetter iHttpGetter = new IHttpGetter();
-        iHttpGetter.download(apiBase + IHttpPoster.download_controller + remoteFileName, null, new IHttpGetter.DownloadSyncCallback() {
+    private static void downloadWithRetry(String apiBase, String remoteFileName, final String localSavePath) {
+        String urlStr = apiBase + IHttpPoster.download_controller + remoteFileName;
+        IHttpDowner downloader = new IHttpDowner();
+        downloader.download(urlStr, null, new IHttpDowner.DownloadSyncCallback() {
             @Override
             public void callback(Exception exception, HttpURLConnection connection, int responseCode, String temporaryDownloadFilePath) {
-
-                if (responseCode >= 200 && responseCode <= 299) {
-
+                if (responseCode >= 200 && responseCode <= 400) {
+                    Log.d("DeviceInfo", "download success");
                     new File(temporaryDownloadFilePath).renameTo(new File(localSavePath));
-
                 } else {
-
-                    String urlBase = "";
-                    if (fRetryCount == 2) {
-                        urlBase = IHttpPoster.apiProtocol + IHttpPoster.apiIp_domain_1 + ":" + IHttpPoster.apiPort;
-                    } else if (fRetryCount == 1) {
-                        urlBase = IHttpPoster.apiProtocol + IHttpPoster.apiIp_domain_2 + ":" + IHttpPoster.apiPort;
-                    } else if (fRetryCount == 0) {
-                        urlBase = IHttpPoster.apiProtocol + IHttpPoster.apiIp + ":" + IHttpPoster.apiPort;
-                    }
-
-                    downloadWithRetry(fRetryCount, urlBase, remoteFileName, localSavePath);
+                    Log.d("DeviceInfo", "download failed");
                 }
-
             }
         });
 

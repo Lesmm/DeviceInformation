@@ -20,11 +20,7 @@ import javax.net.ssl.TrustManager;
 
 import common.modules.util.HttpsWorker;
 
-public class IHttpGetter {
-
-    /*
-     * Get 请求
-     */
+public class IHttpDowner {
 
     public interface DownloadSyncCallback {
         void callback(Exception exception, HttpURLConnection connection, int responseCode, String temporaryDownloadFilePath);
@@ -118,67 +114,5 @@ public class IHttpGetter {
 
     }
 
-    public interface RequestCallback {
-        void callback(Exception exception, HttpURLConnection connection, int responseCode, byte[] responseData);
-    }
-
-    public byte[] get(String urlStr, Map<String, Object> headers, RequestCallback responseHandler) {
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL(urlStr);
-
-            conn = (HttpURLConnection) url.openConnection();
-
-            if (urlStr.startsWith("https")) {
-                SSLContext sslcontext = SSLContext.getInstance("SSL");
-                sslcontext.init(null, new TrustManager[]{new HttpsWorker.TrustAnyTrustManager()}, new SecureRandom());
-                ((HttpsURLConnection) conn).setSSLSocketFactory(sslcontext.getSocketFactory());
-                ((HttpsURLConnection) conn).setHostnameVerifier(new HttpsWorker.TrustAnyHostnameVerifier());
-            }
-
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(60 * 1000);
-            conn.setReadTimeout(60 * 1000);
-
-            if (headers != null) {
-                Set<String> keys = headers.keySet();
-                for (String key : keys) {
-                    conn.setRequestProperty(key, headers.get(key).toString());
-                }
-            }
-
-            conn.connect();
-
-            int responseCode = conn.getResponseCode();
-            InputStream inputStream = conn.getInputStream();
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            int len = -1;
-            byte[] buffer = new byte[512 * 1024]; // 512 KB buffer
-            while ((len = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, len);
-            }
-            outputStream.flush();
-
-            byte[] responseData = outputStream.toByteArray();
-            outputStream.close();
-            inputStream.close();
-
-            if (responseHandler != null) {
-                responseHandler.callback(null, conn, responseCode, responseData);
-            }
-
-            return responseData;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            if (responseHandler != null) {
-                responseHandler.callback(e, conn, 0, null);
-            }
-        }
-
-        return null;
-    }
 
 }

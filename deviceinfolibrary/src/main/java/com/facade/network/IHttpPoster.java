@@ -6,27 +6,21 @@ import com.facade.Manager;
 
 import org.json.JSONObject;
 
-import common.modules.util.IHttpUtil;
 import common.modules.util.IPreferenceUtil;
+import common.modules.util.android.IHTTPUtil;
 
 public class IHttpPoster {
 
-    //    public static final String apiIp_domain_1 = "www.nsshw.com";
-//    public static final String apiIp_domain_2 = "www.game8111.com";
-    public static final String apiIp = "139.9.44.149";      // 华为云
-    public static final String apiIp_domain_1 = "139.9.44.149";
-    public static final String apiIp_domain_2 = "139.9.44.149";
-//    public static final String apiIp = "192.168.3.208";      // 本机
 
-    public static String apiPort = "10099";
     public static String apiProtocol = "https://";
+    public static final String apiHost = "2063d9955e.51mypc.cn";
+    public static String apiPort = "10099";
 
-    public static String apiBase = apiProtocol + apiIp + ":" + apiPort;
+    public static String apiBase = apiProtocol + apiHost + ":" + apiPort;
 
 
     public static String download_controller = "/download/file?fileName=";
     public static final String addTemplate_controller = "/phonetemplate/addCN";
-    public static final String checkConnection_controller = "/common/check_connection";
 
 
     public static void postDeviceInfo(JSONObject deviceInfo) {
@@ -52,7 +46,7 @@ public class IHttpPoster {
         }
         String postString = postJson.toString();
 
-        apiBase = apiProtocol + apiIp + ":" + apiPort;
+        apiBase = apiProtocol + apiHost + ":" + apiPort;
         postWithRetry(addTemplate_controller, postString, 3);
     }
 
@@ -61,67 +55,26 @@ public class IHttpPoster {
         Log.d("DeviceInfo", "request: " + urlStr);
         Log.d("DeviceInfo", "request retry count: " + retryCount);
 
-        retryCount--;
-        if (retryCount < 0) {
-            return;
+        IHTTPUtil.Results results = IHTTPUtil.post(urlStr, postString, retryCount);
+        String response = results.getString();
+        Log.d("DeviceInfo", "response string is: " + response);
+        JSONObject json = results.getJson();
+        Log.d("DeviceInfo", "response json is: " + (json != null ? "<not_null>" : "<null>"));
+
+        if (json != null && json.optBoolean("flag")) {
+            // 收集及上传成功
+            Log.d("DeviceInfo", "Post Success");
+            int newVal = IPreferenceUtil.getSharedPreferences().getInt(Manager.__key_count_dev_info_got__, 0);
+            IPreferenceUtil.setSharedPreferences(Manager.__key_count_dev_info_got__, (Integer) (++newVal));
+        } else {
+            // 上传失败
+            Log.d("DeviceInfo", "Post Failed");
+
+            if (json != null && json.optInt("code") == 20001 && json.optString("message").contains("exception")) {
+                Log.d("DeviceInfo", "Internal exception, no need to retry???");
+            }
         }
-
-        final String fSubUrlStr = subUrlStr;
-        final String fPostString = postString;
-        final int fRetryCount = retryCount;
-
-        IHttpUtil.post(false, urlStr, null, postString, new IHttpUtil.JsonCallback() {
-            @Override
-            public void handle(JSONObject json) {
-                Log.d("DeviceInfo", "RESPONSE: " + (json != null ? json.toString() : "response json is null"));
-
-                if (json != null) {
-                    Log.d("DeviceInfo", "response: " + json.toString());
-                } else {
-                    Log.d("DeviceInfo", "response: <null>");
-                }
-
-                if (json != null && json.optBoolean("flag")) {
-                    // 收集及上传成功
-                    Log.d("DeviceInfo", "Post Success");
-                    int newVal = IPreferenceUtil.getSharedPreferences().getInt(Manager.__key_count_dev_info_got__, 0);
-                    IPreferenceUtil.setSharedPreferences(Manager.__key_count_dev_info_got__, (Integer) (++newVal));
-                } else {
-                    // 上传失败
-                    Log.d("DeviceInfo", "Post Failed");
-
-                    if (json != null && json.optInt("code") == 20001 && json.optString("message").contains("exception")) {
-                        Log.d("DeviceInfo", "Internal exception, no need to retry???");
-                    }
-
-                    // 重新上传
-                    if (fRetryCount == 2) {
-                        apiBase = IHttpPoster.apiProtocol + apiIp_domain_1 + ":" + apiPort;
-                    } else if (fRetryCount == 1) {
-                        apiBase = IHttpPoster.apiProtocol + apiIp_domain_2 + ":" + apiPort;
-                    } else if (fRetryCount == 0) {
-                        apiBase = IHttpPoster.apiProtocol + apiIp + ":" + apiPort;
-                    }
-                    postWithRetry(fSubUrlStr, fPostString, fRetryCount);
-                }
-            }
-        });
     }
 
-    public static void checkConnection() {
-        String urlStr = apiBase + checkConnection_controller;
-        Log.d("DeviceInfo", "request: " + urlStr);
-        IHttpUtil.getAsync(urlStr, null, new IHttpUtil.JsonCallback() {
-            @Override
-            public void handle(JSONObject json) {
-
-                if (json != null && json.optBoolean("flag")) {
-                    Log.d("DeviceInfo", "connection is good");
-                } else {
-                    Log.d("DeviceInfo", "connection is lost");
-                }
-            }
-        });
-    }
 
 }

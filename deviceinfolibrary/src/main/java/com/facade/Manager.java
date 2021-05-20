@@ -69,7 +69,9 @@ public class Manager {
             return null;
         }
 
-        if (!ManagerInfo._IS_DEBUG_ && IPreferenceUtil.getSharedPreferences().getInt(Manager.__key_count_dev_info_got__, 0) >= 5) {
+        int gotCount = IPreferenceUtil.getSharedPreferences().getInt(Manager.__key_count_dev_info_got__, 0);
+        if (!ManagerInfo._IS_DEBUG_ && gotCount >= 5) {
+            Log.d("DeviceInfo", "forgive grab for limit of got count: " + gotCount);
             return null;
         }
 

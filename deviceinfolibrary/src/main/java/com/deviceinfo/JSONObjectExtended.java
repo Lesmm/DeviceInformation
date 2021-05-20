@@ -44,6 +44,9 @@ public class JSONObjectExtended extends JSONObject {
     }
 
     public void copyFrom(Map copyFrom) {
+        if (copyFrom == null) {
+            return;
+        }
         Map<String, Object> nameValuePairs = (Map<String, Object>) IReflectUtil.getFieldValue(this, "nameValuePairs");
 
         Map<?, ?> contentsTyped = (Map<?, ?>) copyFrom;

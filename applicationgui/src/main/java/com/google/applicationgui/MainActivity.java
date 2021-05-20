@@ -132,7 +132,6 @@ public class MainActivity extends Activity {
 
             } else {
                 setDeviceInformation();
-
                 startGrab();
             }
         }
@@ -177,7 +176,6 @@ public class MainActivity extends Activity {
         Manager.grabInfoAsync(new Manager.GrabInfoAsyncCallback() {
             @Override
             public void done(JSONObject info) {
-
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override

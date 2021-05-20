@@ -1,5 +1,7 @@
 package com.deviceinfo.higher;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
@@ -23,17 +25,31 @@ public class HiWifiManager extends HiBase {
 
     @Override
     public JSONObject getInfo(Context mContext) {
-        JSONObject results = new JSONObject();
+        try {
+            Map<String, Object> map = __getInfo__(mContext);
+            return new JSONObjectExtended(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new JSONObject();
+    }
 
-        WifiManager manager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+    public Map<String, Object> __getInfo__(Context mContext) {
+        final WifiManager manager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         if (manager == null) {
-            return results;
+            return null;
         }
 
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
 
-        List<WifiConfiguration> configuredNetworks = manager.getConfiguredNetworks();
-        __put_2_map__(map, configuredNetworks, "getConfiguredNetworks");
+        HiBase.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, new Runnable() {
+            @Override
+            public void run() {
+                @SuppressLint("MissingPermission")
+                List<WifiConfiguration> configuredNetworks = manager.getConfiguredNetworks();
+                __put_2_map__(map, configuredNetworks, "getConfiguredNetworks");
+            }
+        });
 
         WifiInfo connectionInfo = manager.getConnectionInfo();
         __put_2_map__(map, connectionInfo, "getConnectionInfo");
@@ -48,11 +64,11 @@ public class HiWifiManager extends HiBase {
         __put_2_map__(map, wifiState, "getWifiState");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            @SuppressLint("MissingPermission")
             List<PasspointConfiguration> passpointConfigurations = manager.getPasspointConfigurations();
             __put_2_map__(map, passpointConfigurations, "getPasspointConfigurations");
         }
-
-        return new JSONObjectExtended(map);
+        return map;
     }
 
     @Override

@@ -1,8 +1,13 @@
 package com.deviceinfo;
 
 import android.content.Context;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import com.deviceinfo.higher.HiLocationManager;
+import com.deviceinfo.higher.HiTelephonyManager;
+import com.deviceinfo.higher.HiWifiManager;
 import com.deviceinfo.info.AndroidInternalResourcesInfo;
 import com.deviceinfo.info.BatteryInfo;
 import com.deviceinfo.info.BluetoothManagerInfo;
@@ -30,8 +35,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import common.modules.util.IJSONObjectUtil;
 import me.weishu.reflection.Reflection;
+
 import com.facade.Manager;
+
+import java.util.List;
+import java.util.Map;
 
 public class ManagerInfo {
 
@@ -118,8 +128,20 @@ public class ManagerInfo {
             JSONObject extrasInfo = ExtrasInfo.getInfo(mContext);
             result.put("Extras", extrasInfo);
 
-            // Putted in packageInfo
-            JSONObject packageStatInfo = StatInfo.getPackageSizeStatInfo(mContext, packageInfo);
+
+            // Already put in packageInfo, no need to put again
+            /* JSONObject packageStatInfo = */
+            StatInfo.getPackageSizeStatInfo(mContext, packageInfo);
+
+            // 处理一下高层API
+            JSONObject hiTelephonyInfo = new HiTelephonyManager().getInfo(mContext);
+            IJSONObjectUtil.replaceJsonElementsValues(telephonyInfo, hiTelephonyInfo);
+
+            JSONObject hiWifiInfo = new HiWifiManager().getInfo(mContext);
+            IJSONObjectUtil.replaceJsonElementsValues(wifiInfo, hiWifiInfo);
+
+            JSONObject hiLocationExtraInfo = new HiLocationManager().getInExtrasInfo(mContext);
+            IJSONObjectUtil.replaceJsonElementsValues(extrasInfo, hiLocationExtraInfo);
 
             Log.d("DeviceInfo", "_set_debug_here_");
 

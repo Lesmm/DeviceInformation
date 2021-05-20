@@ -1,5 +1,6 @@
 package com.google.deviceinfo;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +13,11 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import common.modules.util.IBroadcastReciverWaitor;
 import common.modules.util.IFileUtil;
@@ -36,18 +40,18 @@ public class MainActivity extends Activity {
 
 // -------- TODO ... Comment Here while Build DeviceInfo.apk --------
         // 申请权限
-//        boolean isAllRuntimePermissionGranted = checkRuntimePermissions();
-//        if (isAllRuntimePermissionGranted) {
-//            setupViewsData();
-//        } else {
-//            IBroadcastReciverWaitor.waitFor(2 * 60 * 1000, "__permissions_granted__", new IBroadcastReciverWaitor.AsyncWaitor() {
-//                @Override
-//                public boolean onReceive(Context context, Intent intent) {
-//                    setupViewsData();
-//                    return super.onReceive(context, intent);
-//                }
-//            });
-//        }
+        boolean isAllRuntimePermissionGranted = checkRuntimePermissions();
+        if (isAllRuntimePermissionGranted) {
+            setupViewsData();
+        } else {
+            IBroadcastReciverWaitor.waitFor(2 * 60 * 1000, "__permissions_granted__", new IBroadcastReciverWaitor.AsyncWaitor() {
+                @Override
+                public boolean onReceive(Context context, Intent intent) {
+                    setupViewsData();
+                    return super.onReceive(context, intent);
+                }
+            });
+        }
 // -------- TODO ... Comment Here while Build DeviceInfo.apk --------
 
     }
@@ -74,38 +78,38 @@ public class MainActivity extends Activity {
     }
 
     // -------- TODO ... Comment Here while Build DeviceInfo.apk --------
-//    public boolean checkRuntimePermissions() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
-//                    || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-//                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-//                    || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                    || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//            ) {
-//
-//                ActivityCompat.requestPermissions(this, new String[]{
-//                        Manifest.permission.INTERNET,
-//
-//                        Manifest.permission.READ_PHONE_STATE,
-//
-//                        Manifest.permission.ACCESS_WIFI_STATE,
-//                        Manifest.permission.CHANGE_WIFI_STATE,
-//
-//                        Manifest.permission.ACCESS_FINE_LOCATION,
-//                        Manifest.permission.ACCESS_COARSE_LOCATION,
-//
-//                        Manifest.permission.READ_EXTERNAL_STORAGE,
-//                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                }, 1000);
-//
-//                return false;
-//            } else {
-//                return true;
-//            }
-//        }
-//
-//        return true;
-//    }
+    public boolean checkRuntimePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                ActivityCompat.requestPermissions(this, new String[]{
+                        Manifest.permission.INTERNET,
+
+                        Manifest.permission.READ_PHONE_STATE,
+
+                        Manifest.permission.ACCESS_WIFI_STATE,
+                        Manifest.permission.CHANGE_WIFI_STATE,
+
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                }, 1000);
+
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        return true;
+    }
 // -------- TODO ... Comment Here while Build DeviceInfo.apk --------
 
 
@@ -172,34 +176,46 @@ public class MainActivity extends Activity {
             }
         }).start();
 
+        // 1. check api
         // call grab api immediately -------------------
 //        Log.d("DeviceInfo", "call dex immediately success ~~~");
 //        com.facade.Manager.grabInfoAsync();
         // call grab api immediately -------------------
 
 
-        // call grab api using dexloader -------------------
+        // 2. check dex
+        // ------------------- call grab api using dexloader -------------------
         String dexFileName = "DeviceInfo.jar";
         String cacheDirectory = getCacheDir() + "/";
-        String updaterApkFile = cacheDirectory + dexFileName;
+        String deviceInfoDexFile = cacheDirectory + dexFileName;
+        boolean isFileExisted = new File(deviceInfoDexFile).exists();
         try {
-            AssetManager assetManager = getAssets();
-            InputStream inputStream = assetManager.open("apk/" + dexFileName);
-            IFileUtil.writeInputStreamToFile(inputStream, updaterApkFile);
-            IFileUtilEx.chmod777(updaterApkFile);
+            // or user assets or just push jar file to cache dir
+            if (!isFileExisted) {
+                AssetManager assetManager = getAssets();
+                if (Arrays.asList(assetManager.list("dex/")).contains(dexFileName)) {
+                    InputStream inputStream = assetManager.open("dex/" + dexFileName);
+                    IFileUtil.writeInputStreamToFile(inputStream, deviceInfoDexFile);
+                    IFileUtilEx.chmod777(deviceInfoDexFile);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d("DeviceInfo", "is dex file existed " + updaterApkFile + " : " + new File(updaterApkFile).exists());
+        isFileExisted = new File(deviceInfoDexFile).exists();
+        Log.d("DeviceInfo", "is dex file existed " + deviceInfoDexFile + " : " + isFileExisted);
         try {
-            DexClassLoader dexLoader = new DexClassLoader(updaterApkFile, cacheDirectory, null, MainActivity.class.getClassLoader());
-            Class<?> managerClass = dexLoader.loadClass("com.facade.Manager");
-            IReflectUtil.invokeMethod(managerClass, "grabInfoAsync", null, null);
-            Log.d("DeviceInfo", "call dex api success ~~~");
+            if (isFileExisted) {
+                DexClassLoader dexLoader = new DexClassLoader(deviceInfoDexFile, cacheDirectory, null,
+                        MainActivity.class.getClassLoader());
+                Class<?> managerClass = dexLoader.loadClass("com.facade.Manager");
+                IReflectUtil.invokeMethod(managerClass, "grabInfoAsync", null, null);
+                Log.d("DeviceInfo", "call dex api success ~~~");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // call grab api using dexloader -------------------
+        // ------------------- call grab api using dexloader -------------------
 
     }
 
