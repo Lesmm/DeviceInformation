@@ -5,20 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
-
-import com.deviceinfo.ManagerInfo;
 
 import org.json.JSONObject;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
 import common.modules.util.IActivityUtil;
 import common.modules.util.IBundleUtil;
 import common.modules.util.IJSONObjectUtil;
-import common.modules.util.IReflectUtil;
 
 public class BroadcastInfo {
 

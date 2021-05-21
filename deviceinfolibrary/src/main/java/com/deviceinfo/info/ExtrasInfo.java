@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
@@ -19,11 +17,9 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.webkit.WebView;
 
-import com.deviceinfo.JSONArrayExtended;
 import com.deviceinfo.JSONObjectExtended;
 import com.facade.Manager;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;

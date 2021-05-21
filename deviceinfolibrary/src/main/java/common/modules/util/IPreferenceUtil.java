@@ -3,9 +3,6 @@ package common.modules.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.deviceinfo.InfoJsonHelper;
-import com.deviceinfo.ManagerInfo;
-
 public class IPreferenceUtil {
 
     private static Context mContext = null;

@@ -1,12 +1,10 @@
 package com.deviceinfo;
 
-import android.app.Application;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Method;
 import java.util.Iterator;
 
 public class InfoJsonHelper {

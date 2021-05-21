@@ -3,7 +3,6 @@ package com.facade.network;
 
 import com.facade.Manager;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;

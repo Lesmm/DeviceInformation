@@ -17,11 +17,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
+import com.facade.Manager;
 import com.google.applicationgui.view.LoadingView;
 
 import org.json.JSONObject;
-
-import com.facade.Manager;
 
 public class MainActivity extends Activity {
 

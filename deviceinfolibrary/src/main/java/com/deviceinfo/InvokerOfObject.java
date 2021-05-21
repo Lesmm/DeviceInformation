@@ -7,8 +7,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import common.modules.util.IFileUtil;
-
 public class InvokerOfObject {
 
     public static interface InvokeHandler {

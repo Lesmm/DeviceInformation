@@ -21,11 +21,6 @@ import common.modules.util.IFileUtil;
 import common.modules.util.IPreferenceUtil;
 import common.modules.util.IReflectUtil;
 
-/**
- * cd $ANDROID_SDK && find -name dx
- * PATH=$PATH:$ANDROID_SDK/build-tools/29.0.2/
- * dx --dex --output=DeviceInfo.jar full.jar
- */
 
 public class Manager {
 

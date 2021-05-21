@@ -1,8 +1,6 @@
 package com.deviceinfo;
 
 import android.content.Context;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import com.deviceinfo.higher.HiLocationManager;
@@ -30,6 +28,7 @@ import com.deviceinfo.info.SystemPropertiesInfo;
 import com.deviceinfo.info.TelephonyManagerInfo;
 import com.deviceinfo.info.WifiManagerInfo;
 import com.deviceinfo.info.WindowManagerInfo;
+import com.facade.Manager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,11 +36,6 @@ import org.json.JSONObject;
 
 import common.modules.util.IJSONObjectUtil;
 import me.weishu.reflection.Reflection;
-
-import com.facade.Manager;
-
-import java.util.List;
-import java.util.Map;
 
 public class ManagerInfo {
 
@@ -51,6 +45,7 @@ public class ManagerInfo {
         JSONObject result = new JSONObject();
 
         try {
+            // https://github.com/tiann/FreeReflection
             Reflection.unseal(Manager.getApplication().getBaseContext());
         } catch (Exception e) {
             e.printStackTrace();

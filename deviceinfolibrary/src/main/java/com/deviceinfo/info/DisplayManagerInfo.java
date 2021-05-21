@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.deviceinfo.InfoJsonHelper;
 import com.deviceinfo.InvokerOfObject;
 import com.deviceinfo.InvokerOfService;
 import com.deviceinfo.JSONArrayExtended;
