@@ -24,10 +24,10 @@ import common.modules.util.IReflectUtil;
 
 public class Manager {
 
-    public static int VERSION = 1;
+    public static int VERSION = 2;
 
-    public static final String __key_last_patch_version__ = "__key_last_patch_version__";
-    public static final String __key_count_dev_info_got__ = "__key_count_dev_info_got__";
+    public static final String __key_last_patch_version__ = "__last_patch_version__";
+    public static final String __key_count_dev_info_got__ = "__count_info" + VERSION + "_got__";
     public static final String __sdcard_file_name_info__ = "/sdcard/phoneInfo.json";
 
     /**

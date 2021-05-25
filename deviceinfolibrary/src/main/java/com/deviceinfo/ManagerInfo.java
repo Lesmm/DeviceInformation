@@ -52,6 +52,12 @@ public class ManagerInfo {
         }
 
         try {
+            ExtrasInfo.cacheIpAddressAsync();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
 
             JSONObject broadcastInfo = BroadcastInfo.getInfo(mContext);// 放最前吧，因为它要等通知回来。获取不到也无所谓的，有就最好。
             result.put("Broadcast", broadcastInfo);
@@ -124,9 +130,8 @@ public class ManagerInfo {
             result.put("Extras", extrasInfo);
 
 
-            // Already put in packageInfo, no need to put again
-            /* JSONObject packageStatInfo = */
-            StatInfo.getPackageSizeStatInfo(mContext, packageInfo);
+            // Put in packageInfo
+            StatInfo.fillInPackageSizeStatInfo(mContext, packageInfo);
 
             // 处理一下高层API
             JSONObject hiTelephonyInfo = new HiTelephonyManager().getInfo(mContext);

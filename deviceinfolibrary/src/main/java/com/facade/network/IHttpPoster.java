@@ -12,9 +12,9 @@ import common.modules.util.android.IHTTPUtil;
 public class IHttpPoster {
 
 
-    public static String apiProtocol = "https://";
-    public static final String apiHost = "2063d9955e.51mypc.cn";
-    public static String apiPort = "10099";
+    public static String apiProtocol = "http://";
+    public static String apiHost = "14.29.147.126";
+    public static String apiPort = "9394";
 
     public static String apiBase = apiProtocol + apiHost + ":" + apiPort;
 

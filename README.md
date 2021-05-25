@@ -21,6 +21,8 @@
 
 ## 全并纯粹的 java jar
 
+    find -name *.jar
+
     cp a.jar tmp/
     cp b.jar tmp/
     cd tmp/

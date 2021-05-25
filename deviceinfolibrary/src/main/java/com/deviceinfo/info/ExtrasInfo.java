@@ -29,16 +29,19 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import common.modules.util.IActivityUtil;
 import common.modules.util.IBundleUtil;
 import common.modules.util.IJSONObjectUtil;
 import common.modules.util.IReflectUtil;
+import common.modules.util.android.IHTTPUtil;
 
 public class ExtrasInfo {
 
@@ -48,7 +51,6 @@ public class ExtrasInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return new JSONObject();
     }
 
@@ -166,16 +168,25 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
-        // 6. Wifi 扫描列表信息. 2021.05.20 外边高层API也再扫了一遍，这里就不扫了
-        /**
+        // IP 地址
         try {
-            WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-            List<ScanResult> scanResults = wifiManager.getScanResults();
-            JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
-            IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
+            if (ipAddressCached != null && !ipAddressCached.isEmpty()) {
+                info.put("Location.ip", ipAddressCached);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // 6. Wifi 扫描列表信息. 2021.05.20 外边高层API也再扫了一遍，这里就不扫了
+        /**
+         try {
+         WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
+         List<ScanResult> scanResults = wifiManager.getScanResults();
+         JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
+         IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
+         } catch (Exception e) {
+         e.printStackTrace();
+         }
          **/
 
         // 系统信息 uname
@@ -267,6 +278,48 @@ public class ExtrasInfo {
 
         return info;
     }
+
+    /**
+     * Ip address
+     */
+
+    public static String ipAddressCached = null;
+
+    public static void cacheIpAddressAsync() {
+        if (ipAddressCached != null) {
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String ip = requestIpAddressSync("http://myip.ipip.net");
+                if (ip == null || ip.isEmpty()) {
+                    ip = requestIpAddressSync("http://ip-api.com/json/");
+                }
+                if (ip == null || ip.isEmpty()) {
+                    ipAddressCached = ip;
+                }
+            }
+        }).start();
+    }
+
+    public static String requestIpAddressSync(String ipUrl) {
+        try {
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("__connect_timeout__", 30 * 1000);
+            headers.put("__read_timeout__", 30 * 1000);
+            IHTTPUtil.Results results = IHTTPUtil.get(ipUrl, headers, 0);
+            Matcher matcher = Pattern.compile("\\d+\\.\\d+\\.\\d+\\.\\d+").matcher(results.getString());
+            return matcher.find() ? matcher.group() : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
+     * Util methods
+     */
 
     private static JSONObject getAllInterfacesAddress() {
         JSONObject addressInfo = new JSONObject();

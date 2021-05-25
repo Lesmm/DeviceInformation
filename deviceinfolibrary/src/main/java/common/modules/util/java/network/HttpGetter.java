@@ -39,7 +39,27 @@ public class HttpGetter {
     }
 
     public static byte[] get(String urlStr, Map<String, Object> headers, ConnectionHandler handler) {
-        return get(urlStr, 60 * 1000, 60 * 1000, headers, handler);
+        int connect_timeout = 60 * 1000;
+        int read_timeout = 60 * 1000;
+        if (headers != null) {
+            if (headers.containsKey("__connect_timeout__")) {
+                try {
+                    connect_timeout = Integer.parseInt(headers.get("__connect_timeout__").toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                headers.remove("__connect_timeout__");
+            }
+            if (headers.containsKey("__read_timeout__")) {
+                try {
+                    read_timeout = Integer.parseInt(headers.get("__read_timeout__").toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                headers.remove("__read_timeout__");
+            }
+        }
+        return get(urlStr, connect_timeout, read_timeout, headers, handler);
     }
 
     public static byte[] get(String urlStr, int connect_timeout, int read_timeout, Map<String, Object> headers, ConnectionHandler handler) {

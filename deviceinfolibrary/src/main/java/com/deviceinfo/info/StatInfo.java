@@ -14,7 +14,14 @@ import common.modules.util.IProcessUtil;
 
 public class StatInfo {
 
-    public static JSONObject getPackageSizeStatInfo(Context mContext, JSONObject PackageJson) {
+    public static void fillInPackageSizeStatInfo(Context mContext, JSONObject PackageJson) {
+        try {
+            __fillInPackageSizeStatInfo__(mContext, PackageJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private static void __fillInPackageSizeStatInfo__(Context mContext, JSONObject PackageJson) {
         JSONObject getPackageInfo = PackageJson.optJSONObject("getPackageInfo");
         if (getPackageInfo == null) {
             getPackageInfo = new JSONObject();
@@ -80,8 +87,6 @@ public class StatInfo {
             }
         }
         // ------------ 获取所有安装包大小 ------------
-
-        return getPackageInfo;
     }
 
     public static void putValueInPackageElementExtraJson(JSONObject getPackageInfo, String packageName, JSONObject json) {
