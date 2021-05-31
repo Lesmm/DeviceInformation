@@ -23,6 +23,14 @@ public class IHttpFacade {
     private static boolean isStarted = false;
 
     public static void checkApkVersionAsync() {
+        try {
+            __checkApkVersionAsync__();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void __checkApkVersionAsync__() {
         if (isStarted) {
             return;
         }
