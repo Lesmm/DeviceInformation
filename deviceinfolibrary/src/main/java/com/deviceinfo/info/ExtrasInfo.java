@@ -41,6 +41,7 @@ import common.modules.util.IActivityUtil;
 import common.modules.util.IBundleUtil;
 import common.modules.util.IJSONObjectUtil;
 import common.modules.util.IReflectUtil;
+import common.modules.util.IThreadUtil;
 import common.modules.util.android.IHTTPUtil;
 
 public class ExtrasInfo {
@@ -54,7 +55,7 @@ public class ExtrasInfo {
         return new JSONObject();
     }
 
-    public static JSONObject __getInfo__(Context mContext) {
+    private static JSONObject __getInfo__(Context mContext) {
         JSONObject info = new JSONObject();
 
         // Build 信息
@@ -180,12 +181,12 @@ public class ExtrasInfo {
         // 6. Wifi 扫描列表信息. 2021.05.20 外边高层API也再扫了一遍，这里就不扫了
         /**
          try {
-         WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-         List<ScanResult> scanResults = wifiManager.getScanResults();
-         JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
-         IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
+             WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
+             List<ScanResult> scanResults = wifiManager.getScanResults();
+             JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
+             IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
          } catch (Exception e) {
-         e.printStackTrace();
+            e.printStackTrace();
          }
          **/
 
@@ -368,46 +369,28 @@ public class ExtrasInfo {
     }
 
     private static String getWebKitUserAgent(final Context mContext) {
-        final String results[] = new String[1];
+        final String[] results = new String[1];
 
-        boolean isInMainThread = Looper.getMainLooper() == Looper.myLooper();
-        if (isInMainThread) {
-
-            // -------------------- the same ------------------
-            String userAgent = new WebView(mContext).getSettings().getUserAgentString();
-            results[0] = userAgent;
-            // -------------------- the same ------------------
-
-        } else {
-            new android.os.Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
                     // -------------------- the same ------------------
                     String userAgent = new WebView(mContext).getSettings().getUserAgentString();
                     results[0] = userAgent;
                     // -------------------- the same ------------------
-
-                    // go on ...
-                    synchronized (ExtrasInfo.class) {
-                        try {
-                            ExtrasInfo.class.notify();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-            // wait ....
-            synchronized (ExtrasInfo.class) {
-                try {
-                    ExtrasInfo.class.wait();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+        };
 
+        boolean isInMainThread = Looper.getMainLooper() == Looper.myLooper();
+        if (isInMainThread) {
+            runnable.run();
+        } else {
+            new android.os.Handler(Looper.getMainLooper()).post(runnable);
+            IThreadUtil.trySleep(8000);     // wait for 8 seconds
         }
         return results[0];
     }
