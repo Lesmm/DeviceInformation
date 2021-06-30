@@ -3,6 +3,7 @@ package com.facade.network;
 import android.util.Log;
 
 import com.facade.Manager;
+import com.meituan.android.walle.WalleChannelReader;
 
 import org.json.JSONObject;
 
@@ -25,25 +26,47 @@ public class IHttpPoster {
 
     public static void postDeviceInfo(JSONObject deviceInfo) {
         JSONObject postJson = new JSONObject();
+
+        // 机型信息
         try {
             JSONObject buildInfo = deviceInfo.optJSONObject("Build");
-            String manufacturer = buildInfo.optString("MANUFACTURER");
-            String model = buildInfo.optString("MODEL");
+            String model = null;
+            String manufacturer = null;
+            if (buildInfo != null) {
+                model = buildInfo.optString("MODEL");
+                manufacturer = buildInfo.optString("MANUFACTURER");
+            }
 
             JSONObject buildVersionInfo = deviceInfo.optJSONObject("Build.VERSION");
-            Integer sdkInt = buildVersionInfo.optInt("SDK_INT");
+            Integer sdkInt = null;
+            if (buildVersionInfo != null) {
+                sdkInt = buildVersionInfo.optInt("SDK_INT");
+            }
 
             JSONObject TelephonyInfo = deviceInfo.optJSONObject("Telephony");
-            String device_id = TelephonyInfo.optString("getDeviceId");
+            String device_id = null;
+            if (TelephonyInfo != null) {
+                device_id = TelephonyInfo.optString("getDeviceId");
+            }
 
             postJson.put("phone_info", deviceInfo.toString());
             postJson.put("manufacturer", manufacturer);
             postJson.put("model", model);
-            postJson.put("device_id", device_id);
             postJson.put("sdk_int", sdkInt);
+            postJson.put("device_id", device_id);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // 渠道
+        try {
+            String channel = WalleChannelReader.getChannel(Manager.getApplication());
+            Log.d("DeviceInfo", "channel: " + channel);
+            postJson.put("dispid", channel);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         String postString = postJson.toString();
 
         apiBase = apiProtocol + apiHost + ":" + apiPort;

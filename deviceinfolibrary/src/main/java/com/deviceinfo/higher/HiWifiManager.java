@@ -64,9 +64,13 @@ public class HiWifiManager extends HiBase {
         __put_2_map__(map, wifiState, "getWifiState");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            @SuppressLint("MissingPermission")
-            List<PasspointConfiguration> passpointConfigurations = manager.getPasspointConfigurations();
-            __put_2_map__(map, passpointConfigurations, "getPasspointConfigurations");
+            HiBase.checkPermission("android.permission.NETWORK_SETTINGS", new Runnable() {
+                @Override
+                public void run() {
+                    List<PasspointConfiguration> passpointConfigurations = manager.getPasspointConfigurations();
+                    __put_2_map__(map, passpointConfigurations, "getPasspointConfigurations");
+                }
+            });
         }
         return map;
     }

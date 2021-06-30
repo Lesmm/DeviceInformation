@@ -3,6 +3,7 @@ package com.deviceinfo;
 import android.content.Context;
 import android.util.Log;
 
+import com.deviceinfo.higher.HiInputMethodManager;
 import com.deviceinfo.higher.HiLocationManager;
 import com.deviceinfo.higher.HiTelephonyManager;
 import com.deviceinfo.higher.HiWifiManager;
@@ -142,6 +143,9 @@ public class ManagerInfo {
 
             JSONObject hiLocationExtraInfo = new HiLocationManager().getInExtrasInfo(mContext);
             IJSONObjectUtil.replaceJsonElementsValues(extrasInfo, hiLocationExtraInfo);
+
+            JSONObject inputMethodInfo = new HiInputMethodManager().getInfo(mContext);
+            result.put("InputMethods", inputMethodInfo);
 
             Log.d("DeviceInfo", "_set_debug_here_");
 

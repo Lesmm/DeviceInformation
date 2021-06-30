@@ -19,6 +19,7 @@ import android.webkit.WebView;
 
 import com.deviceinfo.JSONObjectExtended;
 import com.facade.Manager;
+import com.meituan.android.walle.WalleChannelReader;
 
 import org.json.JSONObject;
 
@@ -79,6 +80,7 @@ public class ExtrasInfo {
             String timeZoneID = timeZone.getID();
             IJSONObjectUtil.putJSONObject(captorJson, "Zone.name", timeZoneName);
             IJSONObjectUtil.putJSONObject(captorJson, "Zone.id", timeZoneID);
+            IJSONObjectUtil.putJSONObject(captorJson, "Channel", WalleChannelReader.getChannel(Manager.getApplication()));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 String[] permissions = new String[]{
@@ -181,12 +183,12 @@ public class ExtrasInfo {
         // 6. Wifi 扫描列表信息. 2021.05.20 外边高层API也再扫了一遍，这里就不扫了
         /**
          try {
-             WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-             List<ScanResult> scanResults = wifiManager.getScanResults();
-             JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
-             IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
+         WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
+         List<ScanResult> scanResults = wifiManager.getScanResults();
+         JSONArray scanResultsArray = new JSONArrayExtended(scanResults);
+         IJSONObjectUtil.putJSONObject(info, "Wifi.ScanResult", scanResultsArray);
          } catch (Exception e) {
-            e.printStackTrace();
+         e.printStackTrace();
          }
          **/
 
@@ -276,6 +278,28 @@ public class ExtrasInfo {
             e.printStackTrace();
         }
 
+        // 看看是否有su
+        JSONObject suJson = null;
+        String[] DEFAULT_ROOTS = {
+                "/sbin/su",
+                "/system/bin/su",
+                "/system/xbin/su",
+                "/su/bin/su",
+                "/su/xbin/su",
+                "/magisk/.core/bin/su"};
+        for (int i = 0; i < DEFAULT_ROOTS.length; i++) {
+            String su_path = DEFAULT_ROOTS[i];
+            boolean isExisted = new File(su_path).exists();
+            if (isExisted) {
+                if (suJson == null) {
+                    suJson = new JSONObject();
+                }
+                IJSONObjectUtil.putJSONObject(suJson, su_path, isExisted);
+            }
+        }
+        if (suJson != null) {
+            IJSONObjectUtil.putJSONObject(info, "su", suJson);
+        }
 
         return info;
     }

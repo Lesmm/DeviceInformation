@@ -298,6 +298,37 @@ public class IJSONObjectUtil {
 		}
 	}
 
+	public static JSONObject getJSONWithKeyContains(JSONObject source, String[] contains) {
+		if (source == null || contains == null) {
+			return null;
+		}
+		JSONObject result = null;
+		try {
+			Iterator<?> iterator = source.keys();
+			while (iterator.hasNext()) {
+				String key = (String) iterator.next();
+
+				boolean isContains = false;
+				for (String str : contains) {
+					if (key.contains(str)) {
+						isContains = true;
+						break;
+					}
+				}
+
+				if (isContains) {
+					if (result == null) {
+						result = new JSONObject();
+					}
+					result.put(key, source.opt(key));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 	/*
 	 * Iterate Json
 	 */
