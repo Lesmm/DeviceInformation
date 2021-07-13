@@ -139,14 +139,13 @@ public class ExtrasInfo {
 
         // 4. 可用核数
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        int coreCount = new File("/sys/devices/system/cpu/").listFiles(new FileFilter() {
+        String cpuDir = "/sys/devices/system/cpu/";
+        File[] files = new File(cpuDir).listFiles(new FileFilter() {
             public final boolean accept(File file) {
-                if (Pattern.matches("cpu[0-9]", file.getName())) {
-                    return true;
-                }
-                return false;
+                return Pattern.matches("cpu[0-9]", file.getName());
             }
-        }).length;
+        });
+        int coreCount = files != null ? files.length : 0;
         try {
             info.put("Core.count", coreCount);
             info.put("Core.available", availableProcessors);
