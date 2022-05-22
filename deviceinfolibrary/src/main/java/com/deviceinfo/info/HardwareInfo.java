@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import common.modules.util.IFileUtil;
+import common.modules.util.IJSONObjectUtil;
 import common.modules.util.IProcessUtil;
 
 public class HardwareInfo {
@@ -69,6 +70,7 @@ public class HardwareInfo {
                     "/proc/version",
                     "/proc/mounts",
                     "/proc/cmdline",
+                    "/proc/stat",       // 有个 btime 是常量(开机时间)
                     "/proc/tty/drivers",
 
                     // SELinux
@@ -88,6 +90,8 @@ public class HardwareInfo {
 
                     // 与 Build.SERIAL / Build.getSerial() 的值一致
                     "/sys/class/android_usb/android0/iSerial",
+
+                    "/system/etc/hosts",
             };
             for (int i = 0; i < proc_files.length; i++) {
                 String path = proc_files[i];
@@ -95,31 +99,31 @@ public class HardwareInfo {
             }
 
             // CPU 核子信息
-            new File("/sys/devices/system/cpu").listFiles(new FileFilter() {
+            String cpu_dir = "/sys/devices/system/cpu/";
+            new File(cpu_dir).listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
-                    boolean isCore = Pattern.matches("cpu[0-9]", pathname.getName());
-                    if (!isCore) {
+                    boolean isCpuDigit = Pattern.matches("cpu[0-9]", pathname.getName());
+                    if (!isCpuDigit) {
                         return false;
                     }
-
-                    String core_dir = pathname.getAbsolutePath();
-                    String cpufreq_dir = core_dir + "/cpufreq";
-                    new File(cpufreq_dir).listFiles(new FileFilter() {
+                    String dir = pathname.getAbsolutePath();
+                    final String cpufreqDir = dir + "/cpufreq";
+                    new File(cpufreqDir).listFiles(new FileFilter() {
                         @Override
-                        public boolean accept(File pathname) {
-                            String path = pathname.getAbsolutePath();
-                            if (path.startsWith("cpuinfo_") || path.startsWith("scaling_")) {
-                                try {
-                                    filesInfos.put(path, IFileUtil.readFileToText(path));
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                        public boolean accept(File file) {
+                            if (file.isFile() && file.length() > 0) {
+                                JSONObject json = filesInfos.optJSONObject(cpufreqDir);
+                                if (json == null) {
+                                    json = new JSONObject();
+                                    IJSONObjectUtil.put(filesInfos, cpufreqDir, json);
                                 }
+                                String name = file.getName();
+                                IJSONObjectUtil.put(json, name, IFileUtil.readFileToText(file.getAbsolutePath()));
                             }
                             return false;
                         }
                     });
-
                     return true;
                 }
             });
