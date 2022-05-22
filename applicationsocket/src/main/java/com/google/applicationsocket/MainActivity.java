@@ -1,5 +1,6 @@
 package com.google.applicationsocket;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.applicationsocket.events.MainActivityEvent;
 import com.google.applicationsocket.utils.AlertDialogUtils;
@@ -26,7 +26,7 @@ import com.google.applicationsocket.utils.NetworkUtils;
 
 import java.lang.ref.WeakReference;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private com.github.ybq.android.spinkit.SpinKitView spinKitView;
     private BroadcastReceiver broadcastReceiver;

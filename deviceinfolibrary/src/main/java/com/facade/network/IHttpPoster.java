@@ -13,15 +13,15 @@ import common.modules.util.android.IHTTPUtil;
 public class IHttpPoster {
 
 
-    public static String apiProtocol = "http://";
-    public static String apiHost = "14.29.147.126";
-    public static String apiPort = "9394";
+    public static String releaseHost = "192.168.10.62";
+    public static String releasePort = "12306";
+    public static String releaseScheme = "http";
 
-    public static String apiBase = apiProtocol + apiHost + ":" + apiPort;
+    public static String apiBase = releaseScheme + "://" + releaseHost + ":" + releasePort;
 
 
-    public static String download_controller = "/download/file?fileName=";
-    public static final String addTemplate_controller = "/phonetemplate/addCN";
+    public static String download_controller = "/Download/file?fileName=";
+    public static String addTemplate_controller = "/DeviceTemplate/addOne";
 
 
     public static void postDeviceInfo(JSONObject deviceInfo) {
@@ -68,8 +68,6 @@ public class IHttpPoster {
         }
 
         String postString = postJson.toString();
-
-        apiBase = apiProtocol + apiHost + ":" + apiPort;
         postWithRetry(addTemplate_controller, postString, 3);
     }
 
